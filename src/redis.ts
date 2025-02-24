@@ -1,10 +1,6 @@
-import { Redis } from "@upstash/redis";
+import Redis from "ioredis";
 import assert from "assert";
 
-assert(process.env.UPSTASH_REDIS_URL, "UPSTASH_REDIS_URL is required");
-assert(process.env.UPSTASH_REDIS_TOKEN, "UPSTASH_REDIS_TOKEN is required");
+assert(process.env.REDIS_URL, "REDIS_URL is required");
 
-export const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_URL,
-  token: process.env.UPSTASH_REDIS_TOKEN,
-});
+export const redis = new Redis(process.env.REDIS_URL);
