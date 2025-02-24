@@ -66,7 +66,7 @@ const router = s.router(apiContract, {
       server.log.error({
         event: "extract_error",
         mimeType,
-        error: error.message,
+        error: (error as Error).message,
         duration_ms: duration.toFixed(2),
       });
 
