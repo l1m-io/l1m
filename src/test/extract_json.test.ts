@@ -32,13 +32,16 @@ import assert from "assert";
     },
   };
 
-  const response = await fetch("http://localhost:3000/extract", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(testData),
-  });
+  const response = await fetch(
+    process.env.TEST_SERVER ?? "http://localhost:3000/extract",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(testData),
+    }
+  );
 
   assert(response.ok, "Response should be successful");
 
