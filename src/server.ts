@@ -81,7 +81,10 @@ server.register(s.plugin(router));
 // Start the server
 const start = async () => {
   try {
-    await server.listen({ port: 3000 });
+    await server.listen({
+      port: 3000,
+      host: "0.0.0.0",
+    });
     server.log.info(`Server started at ${new Date().toISOString()}`);
   } catch (err) {
     server.log.error(err);
