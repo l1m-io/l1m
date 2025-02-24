@@ -4,6 +4,17 @@ import { z } from "zod";
 const c = initContract();
 
 export const apiContract = c.router({
+  health: {
+    method: "GET",
+    path: "/health",
+    responses: {
+      200: z.object({
+        status: z.string(),
+        timestamp: z.number(),
+        uptime: z.number(),
+      }),
+    },
+  },
   extract: {
     method: "POST",
     path: "/extract",
