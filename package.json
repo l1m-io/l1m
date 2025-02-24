@@ -1,0 +1,25 @@
+{
+  "name": "fastify-extract",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.36.3",
+    "@ts-rest/fastify": "^3.52.0",
+    "@upstash/redis": "^1.34.4",
+    "dotenv": "^16.4.7",
+    "fastify": "^4.26.1",
+    "jsonschema": "^1.5.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "scripts": {
+    "start": "tsx -r dotenv/config --watch src/server.ts",
+    "dev": "tsx -r dotenv/config --watch src/server.ts",
+    "build": "tsc",
+    "watch": "tsc -w"
+  }
+}
