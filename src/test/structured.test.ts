@@ -218,6 +218,10 @@ async function testInvalidInputUrl() {
       headers: {
         "Content-Type": "application/json",
         "x-cache-key": Math.random().toString(),
+        ...(testCustomProvider ? {
+          "x-provider-url": process.env.TEST_PROVIDER_URL,
+          "x-provider-key": process.env.TEST_PROVIDER_KEY,
+          "x-provider-model": process.env.TEST_PROVIDER_MODEL } : {})
       },
       body: JSON.stringify(testData),
     }
@@ -243,6 +247,10 @@ async function testInvalidInputUrlType() {
       headers: {
         "Content-Type": "application/json",
         "x-cache-key": Math.random().toString(),
+        ...(testCustomProvider ? {
+          "x-provider-url": process.env.TEST_PROVIDER_URL,
+          "x-provider-key": process.env.TEST_PROVIDER_KEY,
+          "x-provider-model": process.env.TEST_PROVIDER_MODEL } : {})
       },
       body: JSON.stringify(testData),
     }
