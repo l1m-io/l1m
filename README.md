@@ -24,12 +24,11 @@ Extracts structured data from content according to the provided schema.
 **Request Body:**
 - `raw` (string, optional): Raw text content, base64 in the case of image / audio
 - `url` (string, optional): URL to fetch content from
-- `type` (string, default: "text/plain"): Content MIME type (this is inferred from the URL content if provided)
 - `schema` (object): JSON Schema defining the structure to extract
 
 **Note:** Either `raw` or `url` must be provided, but not both.
 
-**Supported MIME Types:**
+**Supported URL MIME Types:**
 - `text/plain`
 - `application/json`
 - `image/jpeg`

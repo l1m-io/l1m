@@ -116,7 +116,7 @@ export const structured = async ({
   clientRegistry
 }:{
   raw: string,
-  type: string,
+  type?: string,
   schema: Schema,
   clientRegistry?: ClientRegistry
 }) => {

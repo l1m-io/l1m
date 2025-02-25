@@ -43,10 +43,13 @@ const router = s.router(apiContract, {
   },
   structured: async ({ body, request, headers }) => {
     const startTime = process.hrtime();
-    const { url, schema } = body;
-    let { raw } = body;
 
-    let type = body.type as string;
+    const schema = body.schema;
+    const url = body.url;
+
+    let raw = body.raw;
+
+    let type: string | undefined;
 
     if (url) {
       try {
@@ -73,12 +76,12 @@ const router = s.router(apiContract, {
       }
     }
 
-    if (!validMimeTypes.includes(type)) {
+    if (type && !validMimeTypes.includes(type)) {
       server.log.warn({route: "structured", error: "Invalid mime type", type});
       return {
         status: 400,
         body: {
-          message: "Invalid mime type",
+          message: "Provided URL has invalid mime type",
           type,
         },
       }

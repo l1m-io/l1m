@@ -23,12 +23,6 @@ export const apiContract = c.router({
     body: z.object({
       raw: z.string().optional(),
       url: z.string().optional(),
-      type: z.enum([
-        "text/plain",
-        "application/json",
-        "image/jpeg",
-        "image/png",
-      ]).default("text/plain"),
       schema: z.record(z.any()),
     })
     .refine(
