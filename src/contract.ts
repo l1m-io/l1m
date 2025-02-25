@@ -3,6 +3,8 @@ import { z } from "zod";
 
 const c = initContract();
 
+const hasDefaultProvider = !!process.env.DEFAULT_BEDROCK_MODEL;
+
 export const apiContract = c.router({
   health: {
     method: "GET",
@@ -34,9 +36,15 @@ export const apiContract = c.router({
       "Either raw or url must be provided"
     ),
     headers: z.object({
-      "x-provider-model": z.string().optional(),
-      "x-provider-url": z.string().optional(),
-      "x-provider-key": z.string().optional(),
+      ...(hasDefaultProvider ? {
+        "x-provider-model": z.string().optional(),
+        "x-provider-url": z.string().optional(),
+        "x-provider-key": z.string().optional(),
+      } : {
+        "x-provider-model": z.string(),
+        "x-provider-url": z.string(),
+        "x-provider-key": z.string(),
+      }),
       "x-cache-key": z.string().optional(),
     })
     // If any "x-provider" header is set, then all "x-provider" headers must be set
