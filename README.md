@@ -1,7 +1,6 @@
-# inferableghq/llm
+# l1m
 
-A TypeScript/Node.js API extracts structured data from text and images using LLMs.
-
+A low-level API to extract structured data from text and images using LLMs.
 
 ## API Endpoints
 
