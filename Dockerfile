@@ -37,6 +37,12 @@ RUN npm prune --omit=dev
 # Final stage for app image
 FROM base
 
+# Install CA certificates
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Copy built application
 COPY --from=build /app /app
 
