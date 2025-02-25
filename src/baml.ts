@@ -2,7 +2,8 @@ import { b } from "./baml_client"
 import { Schema } from "jsonschema";
 import TypeBuilder from "./baml_client/type_builder";
 import { ClassBuilder } from "@boundaryml/baml/type_builder";
-import { ClientRegistry, Image, Audio } from "@boundaryml/baml";
+import { ClientRegistry, Image, Audio, BamlClientHttpError } from "@boundaryml/baml";
+import { z } from "zod"
 
 const addJsonProperty = ({
   tb,
@@ -133,9 +134,51 @@ export const structured = async ({
     throw new Error("Schema must be an object");
   }
 
-  if (type && type.startsWith("image/")) {
-    return await b.ExtractImage(Image.fromBase64(type, raw), {tb, clientRegistry});
-  }
+  try {
+    if (type && type.startsWith("image/")) {
+      return await b.ExtractImage(Image.fromBase64(type, raw), {tb, clientRegistry});
+    }
 
-  return await b.ExtractString(raw, {tb, clientRegistry});
+    return await b.ExtractString(raw, {tb, clientRegistry});
+  } catch (error) {
+
+    // Special handling for non-parsed Baml errors. i.e OpenRouter 402 errors
+    if (
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "GenericFailure" &&
+      error.message.includes("Failed to parse into a response accepted by baml_runtime")
+    ) {
+      const result = z.object({
+        // This may be OpenRouter specific
+        error: z.object({
+          code: z.union([z.string(), z.number()]),
+          message: z.string(),
+        }),
+      }).safeParse(
+        parseJsonSubstring(error.message)
+      );
+
+      if (result.success) {
+        // Rethrow as a BamlClientHttpError which will forward the error to the client
+        throw new BamlClientHttpError("unknown", result.data.error.message, Number(result.data.error.code));
+      } else {
+        throw new Error("Failed to parse message from provider");
+      }
+    }
+
+    throw error;
+  }
 }
+
+// Attempt to parse a JSON object substring from a string
+const parseJsonSubstring = (raw: string): unknown | null => {
+  const jsonMatch = raw.match(/{.*}/s); // Match JSON-like content
+  if (!jsonMatch) return null;
+
+  try {
+    return JSON.parse(jsonMatch[0]);
+  } catch {
+    return null;
+  }
+};
