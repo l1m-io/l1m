@@ -74,18 +74,36 @@ export const buildClientRegistry = (provider: {
 }) => {
   const clientRegistry = new ClientRegistry();
 
-  if (provider.url && provider.key && provider.model) {
+  if (!provider.url || !provider.key || !provider.model) {
+    clientRegistry.addLlmClient("bedrock", "aws-bedrock", {
+      model: process.env.DEFAULT_BEDROCK_MODEL
+    });
+    clientRegistry.setPrimary("bedrock");
+    return clientRegistry;
+  }
+
+  if (provider.url.includes("api.openai.com")) {
+    clientRegistry.addLlmClient("openai", "openai", {
+      api_key: provider.key,
+      model: provider.model,
+    });
+    clientRegistry.setPrimary("openai");
+  } else if (provider.url.includes("api.anthropic.com")) {
+    clientRegistry.addLlmClient("anthropic", "anthropic", {
+      api_key: provider.key,
+      model: provider.model,
+      headers: {
+        "x-api-key" : provider.key
+      }
+    });
+    clientRegistry.setPrimary("anthropic");
+  } else {
     clientRegistry.addLlmClient("custom", "openai-generic", {
       base_url: provider.url,
       api_key: provider.key,
       model: provider.model,
     });
     clientRegistry.setPrimary("custom");
-  } else {
-    clientRegistry.addLlmClient("bedrock", "aws-bedrock", {
-      model: process.env.DEFAULT_BEDROCK_MODEL
-    });
-    clientRegistry.setPrimary("bedrock");
   }
 
   return clientRegistry;
