@@ -79,7 +79,7 @@ const router = s.router(apiContract, {
       return {
         status: 400,
         body: {
-          message: "Provided URL has invalid mime type",
+          message: "Provided content has invalid mime type",
           type,
         },
       }
@@ -167,8 +167,8 @@ server.setErrorHandler((error, request, reply) => {
       message: "Failed to call provider",
     });
   } else if (error instanceof BamlValidationError || error instanceof BamlClientFinishReasonError) {
-    reply.status(400).send({
-      message: error.message,
+    reply.status(200).send({
+      data: null,
     })
   } else {
     reply.status(error.statusCode || 500).send({

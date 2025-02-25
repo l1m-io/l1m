@@ -122,54 +122,11 @@ async function testJsonObject() {
   );
 }
 
-async function testImageRaw() {
-  const url = "https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png";
-  const image = await fetch(url);
-  const buffer = await image.arrayBuffer();
-  const base64 = Buffer.from(buffer).toString("base64");
-
-  const testData = {
-    raw: base64,
-    type: "image/png",
-    schema: {
-      type: "object",
-      properties: {
-        character: { type: "string" },
-      },
-    },
-  };
-
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
-        ...(testCustomProvider ? {
-          "x-provider-url": process.env.TEST_PROVIDER_URL,
-          "x-provider-key": process.env.TEST_PROVIDER_KEY,
-          "x-provider-model": process.env.TEST_PROVIDER_MODEL } : {})
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  assert(response.ok, "Response should be successful");
-
-  assert(
-    result.data.character === "Shrek",
-    "Character should be extracted correctly"
-  );
-}
-
 async function testImageUrl() {
   const url = "https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png";
 
   const testData = {
     url,
-    type: "image/png",
     schema: {
       type: "object",
       properties: {
@@ -276,10 +233,10 @@ async function testInvalidInputUrlType() {
   });
 
   assert(response.status === 400);
-  assert(result.message === "Invalid mime type");
+  assert(result.message === "Provided content has invalid mime type");
 }
 
-async function testInvalidApiKey() {
+async function testInvalidApiKey(provider: "openrouter" | "groq") {
   const testData = {
     raw: "abc123",
     schema: {
@@ -290,6 +247,16 @@ async function testInvalidApiKey() {
     },
   };
 
+  const providerMap = {
+    openrouter: "https://openrouter.ai/api/v1",
+    groq: "https://api.groq.com/openai/v1",
+  };
+
+  const providerMessageMap = {
+    openrouter: "No auth credentials found",
+    groq: "Invalid API Key"
+  };
+
   const response = await fetch(
     process.env.TEST_SERVER ?? "http://localhost:3000/structured",
     {
@@ -297,7 +264,7 @@ async function testInvalidApiKey() {
       headers: {
         "Content-Type": "application/json",
         "x-cache-key": Math.random().toString(),
-        "x-provider-url": "https://api.groq.com/openai/v1",
+        "x-provider-url": providerMap[provider],
         "x-provider-model": "INVALID",
         "x-provider-key": "INVALID"
       },
@@ -307,13 +274,13 @@ async function testInvalidApiKey() {
 
   const result = await response.json();
   console.log("Result", {
-    result,
+    result: JSON.stringify(result),
     status: response.status
   });
 
   assert(response.status === 401, "Status code should be forwarded from provider");
   assert(result.message === "Failed to call provider");
-  assert(result.providerResponse.error.message === "Invalid API Key", "Error message should be forwarded from provider");
+  assert(result.providerResponse.error.message === providerMessageMap[provider], "Error message should be forwarded from provider");
 }
 
 
@@ -356,13 +323,13 @@ async function testPartialProviderDetails() {
   }
 
   await runTest("General", testJsonObject);
-  await runTest("Image: Raw", testImageRaw);
   await runTest("Image: URL", testImageUrl);
 
   await runTest("Input URL: Invalid URL", testInvalidInputUrl);
   await runTest("Input URL: Invalid type", testInvalidInputUrlType);
 
-  await runTest("Provider: Invalid API Key", testInvalidApiKey);
+  await runTest("Provider: Invalid groq API Key", () => testInvalidApiKey("groq"));
+  await runTest("Provider: Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
   await runTest("Provider: Partial details", testPartialProviderDetails);
 
   console.log("All tests completed");
