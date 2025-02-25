@@ -9,16 +9,20 @@ import { initServer } from "@ts-rest/fastify";
 import { redis } from "./redis";
 import { Schema } from "jsonschema";
 import { buildClientRegistry, structured } from "./baml";
-import { BamlClientFinishReasonError, BamlClientHttpError, BamlValidationError } from "@boundaryml/baml";
+import {
+  BamlClientFinishReasonError,
+  BamlClientHttpError,
+  BamlValidationError,
+} from "@boundaryml/baml";
 
 const server = fastify({ logger: true });
 const s = initServer();
 
 const generateCacheKey = (input: string[]) => {
   const hash = crypto.createHash("sha256");
-  input.forEach(text => hash.update(text));
+  input.forEach((text) => hash.update(text));
   return hash.digest("hex");
-}
+};
 
 const validMimeTypes = [
   "text/plain",
@@ -26,9 +30,18 @@ const validMimeTypes = [
 
   "image/jpeg",
   "image/png",
-]
+];
 
 const router = s.router(apiContract, {
+  home: async () => {
+    return {
+      status: 200,
+      body: {
+        message:
+          "Hello, world! This is the l1m (pronounced el-one-em) API. It's a simple API that allows you to extract structured data from text. See https://l1m.io for docs.",
+      },
+    };
+  },
   health: async () => {
     return {
       status: 200,
@@ -51,39 +64,47 @@ const router = s.router(apiContract, {
 
     if (url) {
       try {
-        const result = await retry(async () => {
-          const response = await fetch(url);
-          const buffer = await response.arrayBuffer();
-          return {
-            raw: Buffer.from(buffer).toString("base64"),
-            type: response.headers.get("content-type"),
-          }
-        }, { retries: 2 });
+        const result = await retry(
+          async () => {
+            const response = await fetch(url);
+            const buffer = await response.arrayBuffer();
+            return {
+              raw: Buffer.from(buffer).toString("base64"),
+              type: response.headers.get("content-type"),
+            };
+          },
+          { retries: 2 }
+        );
 
         raw = result.raw;
         type = result.type ?? type;
-
       } catch {
-        server.log.warn({route: "structured", error: "Failed to fetch url contents"});
+        server.log.warn({
+          route: "structured",
+          error: "Failed to fetch url contents",
+        });
         return {
           status: 400,
           body: {
             message: "Failed to fetch url contents",
           },
-        }
+        };
       }
     }
 
     if (type && !validMimeTypes.includes(type)) {
-      server.log.warn({route: "structured", error: "Invalid mime type", type});
+      server.log.warn({
+        route: "structured",
+        error: "Invalid mime type",
+        type,
+      });
       return {
         status: 400,
         body: {
           message: "Provided content has invalid mime type",
           type,
         },
-      }
-
+      };
     }
 
     if (!raw) {
@@ -100,26 +121,35 @@ const router = s.router(apiContract, {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const duration = seconds * 1000 + nanoseconds / 1000000;
 
-      let cacheKey: string = generateCacheKey([raw, JSON.stringify(schema), headers["x-provider-key"] ?? ""]);
+      let cacheKey: string = generateCacheKey([
+        raw,
+        JSON.stringify(schema),
+        headers["x-provider-key"] ?? "",
+      ]);
 
       if (headers["x-cache-key"] && headers["x-provider-key"]) {
-        cacheKey = generateCacheKey([headers["x-cache-key"], headers["x-provider-key"]])
+        cacheKey = generateCacheKey([
+          headers["x-cache-key"],
+          headers["x-provider-key"],
+        ]);
       }
 
       // TODO: Validate model support
 
       const fromCache = await redis?.get(cacheKey);
 
-      let result = fromCache ? JSON.parse(fromCache) : await structured({
-        raw,
-        type,
-        schema,
-        clientRegistry: buildClientRegistry({
-          url: headers["x-provider-url"],
-          key: headers["x-provider-key"],
-          model: headers["x-provider-model"],
-        })
-      });
+      let result = fromCache
+        ? JSON.parse(fromCache)
+        : await structured({
+            raw,
+            type,
+            schema,
+            clientRegistry: buildClientRegistry({
+              url: headers["x-provider-url"],
+              key: headers["x-provider-key"],
+              model: headers["x-provider-model"],
+            }),
+          });
 
       if (!fromCache) {
         await redis?.set(cacheKey, JSON.stringify(result));
@@ -143,7 +173,9 @@ const router = s.router(apiContract, {
 
       server.log.error({
         route: "structured",
-        ...(error instanceof Error ? { error: error.message } : { error: error }),
+        ...(error instanceof Error
+          ? { error: error.message }
+          : { error: error }),
         duration_ms: duration.toFixed(2),
       });
 
@@ -160,23 +192,25 @@ server.setErrorHandler((error, request, reply) => {
 
     try {
       providerResponse = JSON.parse(providerResponse);
-    } catch { }
+    } catch {}
 
     reply.status(error.status_code || 500).send({
       providerResponse,
       message: "Failed to call provider",
     });
-  } else if (error instanceof BamlValidationError || error instanceof BamlClientFinishReasonError) {
+  } else if (
+    error instanceof BamlValidationError ||
+    error instanceof BamlClientFinishReasonError
+  ) {
     reply.status(200).send({
       data: null,
-    })
+    });
   } else {
     reply.status(error.statusCode || 500).send({
       message: error.message,
     });
   }
 });
-
 
 // Register the routes
 server.register(s.plugin(router));
