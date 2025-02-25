@@ -14,11 +14,9 @@ import { BamlClientFinishReasonError, BamlClientHttpError, BamlValidationError }
 const server = fastify({ logger: true });
 const s = initServer();
 
-const generateCacheKey = (text: string, schema: Schema, key?: string) => {
+const generateCacheKey = (input: string[]) => {
   const hash = crypto.createHash("sha256");
-  hash.update(text);
-  hash.update(JSON.stringify(schema));
-  key && hash.update(key);
+  input.forEach(text => hash.update(text));
   return hash.digest("hex");
 }
 
@@ -102,7 +100,11 @@ const router = s.router(apiContract, {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const duration = seconds * 1000 + nanoseconds / 1000000;
 
-      const cacheKey = headers["x-cache-key"] ?? generateCacheKey(raw, schema, headers["x-provider-key"]);
+      let cacheKey: string = generateCacheKey([raw, JSON.stringify(schema), headers["x-provider-key"] ?? ""]);
+
+      if (headers["x-cache-key"] && headers["x-provider-key"]) {
+        cacheKey = generateCacheKey([headers["x-cache-key"], headers["x-provider-key"]])
+      }
 
       // TODO: Validate model support
 
