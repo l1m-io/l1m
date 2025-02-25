@@ -94,6 +94,7 @@ async function testJsonObject() {
 
   const result = await response.json();
   console.log(result);
+
   assert(response.ok, "Response should be successful");
 
   assert(

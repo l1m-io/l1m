@@ -15,7 +15,7 @@ Extracts structured data from content according to the provided schema.
 
 **Headers:**
 - `x-provider-model` (optional): Custom LLM model to use
-- `x-provider-url` (optional): Custom LLM provider URL
+- `x-provider-url` (optional): Custom LLM provider URL (OpenAI compatiable or Anthropic API)
 - `x-provider-key` (optional): API key for custom LLM provider
 - `x-cache-key` (optional): Custom cache key
 
@@ -91,17 +91,27 @@ npm run dev
 # Run tests (Against default LLM provider)
 npm run test
 
+# Run tests (Against groq)
 export TEST_PROVIDER_MODEL="llama-3.2-90b-vision-preview"
 export TEST_PROVIDER_URL="https://api.groq.com/openai/v1"
 export TEST_PROVIDER_KEY="" # Get your API key from https://console.groq.com/
-
-# Run tests (Against groq)
 npm run test
 
+# Run tests (Against OpenRouter)
 export TEST_PROVIDER_MODEL="openai/gpt-4o"
 export TEST_PROVIDER_URL="https://openrouter.ai/api/v1"
 export TEST_PROVIDER_KEY="" # Get your API key from https://openrouter.ai
+npm run test
 
-# Run tests (Against groq)
+# Run tests (Against OpenAI)
+export TEST_PROVIDER_MODEL="gpt-4o-mini"
+export TEST_PROVIDER_URL="https://api.openai.com/v1"
+export TEST_PROVIDER_KEY="" # Get your API key from https://platform.openai.com
+npm run test
+
+# Run tests (Against Anthropic)
+export TEST_PROVIDER_MODEL="claude-3-7-sonnet-20250219"
+export TEST_PROVIDER_URL="https://api.anthropic.com/v1/messages"
+export TEST_PROVIDER_KEY="" # Get your API key from https://console.anthropic.com
 npm run test
 ```
