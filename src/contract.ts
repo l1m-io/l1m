@@ -15,17 +15,39 @@ export const apiContract = c.router({
       }),
     },
   },
-  extract: {
+  structured: {
     method: "POST",
-    path: "/extract",
+    path: "/structured",
     body: z.object({
-      raw: z.string(),
-      mimeType: z.enum(["application/json", "text/plain"]),
+      raw: z.string().optional(),
+      url: z.string().optional(),
+      type: z.enum([
+        "text/plain",
+        "application/json",
+        "image/jpeg",
+        "image/png",
+      ]).default("text/plain"),
       schema: z.record(z.any()),
-    }),
+    })
+    .refine(
+      (body) => (body.raw || body.url) && !((body.raw && body.url) || !(body.raw || body.url)),
+      "Either raw or url must be provided"
+    ),
+    headers: z.object({
+      "x-provider-model": z.string().optional(),
+      "x-provider-url": z.string().optional(),
+      "x-provider-key": z.string().optional(),
+      "x-cache-key": z.string().optional(),
+    })
+    // If any "x-provider" header is set, then all "x-provider" headers must be set
+    .refine(
+      (headers) =>
+        (!headers["x-provider-model"] && !headers["x-provider-url"] && !headers["x-provider-key"])
+          || (headers["x-provider-model"] && headers["x-provider-url"] && headers["x-provider-key"]),
+      "If any x-provider-* header is set, then all x-provider headers must be set"
+    ),
     responses: {
       200: z.object({
-        success: z.boolean(),
         data: z.record(z.any()),
       }),
     },
