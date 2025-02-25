@@ -43,4 +43,6 @@ dump.rdb
 
 # Misc
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+baml_client
