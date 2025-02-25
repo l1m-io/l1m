@@ -93,7 +93,10 @@ async function testJsonObject() {
   );
 
   const result = await response.json();
-  console.log(result);
+  console.log("Result", {
+    result,
+    status: response.status
+  });
 
   assert(response.ok, "Response should be successful");
 
@@ -192,6 +195,11 @@ async function testImageUrl() {
   );
 
   const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status
+  });
+
   assert(response.ok, "Response should be successful");
 
   assert(
@@ -228,6 +236,11 @@ async function testInvalidInputUrl() {
   );
 
   const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status
+  });
+
   assert(response.status === 400);
   assert(result.message === "Failed to fetch url contents");
 }
@@ -257,6 +270,11 @@ async function testInvalidInputUrlType() {
   );
 
   const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status
+  });
+
   assert(response.status === 400);
   assert(result.message === "Invalid mime type");
 }
@@ -288,6 +306,10 @@ async function testInvalidApiKey() {
   );
 
   const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status
+  });
 
   assert(response.status === 401, "Status code should be forwarded from provider");
   assert(result.message === "Failed to call provider");
@@ -315,6 +337,10 @@ async function testPartialProviderDetails() {
   );
 
   const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status
+  });
 
   assert(response.status === 400);
   assert(result.headerErrors.issues[0].message === "If any x-provider-* header is set, then all x-provider headers must be set");
