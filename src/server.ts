@@ -14,8 +14,6 @@ import { BamlClientFinishReasonError, BamlClientHttpError, BamlValidationError }
 const server = fastify({ logger: true });
 const s = initServer();
 
-assert(process.env.DEFAULT_BEDROCK_MODEL)
-
 const generateCacheKey = (text: string, schema: Schema, key?: string) => {
   const hash = crypto.createHash("sha256");
   hash.update(text);
@@ -104,7 +102,6 @@ const router = s.router(apiContract, {
       const cacheKey = headers["x-cache-key"] ?? generateCacheKey(raw, schema, headers["x-provider-key"]);
 
       // TODO: Validate model support
-      // TODO: Demo / default model support
 
       const fromCache = await redis?.get(cacheKey);
 

@@ -41,7 +41,6 @@ curl -X POST http://localhost:3000/structured \
   -H "Content-Type: application/json" \
   -d '{
     "raw": "John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
-    "type": "text/plain",
     "schema": {
       "type": "object",
       "properties": {
