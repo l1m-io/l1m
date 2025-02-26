@@ -61,23 +61,6 @@ const router = s.router(apiContract, {
     const { input } = body;
     let { schema } = body;
 
-    const demoData = getDemoData({
-      input,
-      schema: JSON.stringify(schema),
-      providerKey,
-      providerModel,
-      providerUrl,
-    });
-
-    if (demoData) {
-      return {
-        status: 200,
-        body: {
-          data: demoData,
-        },
-      };
-    }
-
     if (!validateJsonSchema(schema)) {
       return {
         status: 400,
@@ -99,6 +82,24 @@ const router = s.router(apiContract, {
 
     // Remove refs
     schema = dereferenceSync(schema);
+
+
+    const demoData = getDemoData({
+      input,
+      schema: JSON.stringify(schema),
+      providerKey,
+      providerModel,
+      providerUrl,
+    });
+
+    if (demoData) {
+      return {
+        status: 200,
+        body: {
+          data: demoData,
+        },
+      };
+    }
 
     const type = await inferMimeType(input);
 

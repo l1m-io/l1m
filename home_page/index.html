@@ -234,48 +234,48 @@
 -H "X-Provider-Key: demo" \
 -H "X-Provider-Model: demo" \
 -d '{
-    "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
-    "schema": {
-        "type": "object",
-        "properties": {
-            "events": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "year": { "type": "number" },
-                        "event": { "type": "string" }
-                    }
-                }
-            }
+  "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "price": { "type": "number" }
+          }
         }
+      }
     }
+  }
 }'</code></pre>
 
     <h3>Image Example</h3>
     <pre><code class="language-bash">curl -X POST https://api.l1m.io/structured \
-  -H "Content-Type: application/json" \
-  -H "X-Provider-Url: demo" \
-  -H "X-Provider-Key: demo" \
-  -H "X-Provider-Model: demo" \
-  -d '{
-      "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
-      "schema": {
+-H "Content-Type: application/json" \
+-H "X-Provider-Url: demo" \
+-H "X-Provider-Key: demo" \
+-H "X-Provider-Model: demo" \
+-d '{
+  "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
           "type": "object",
           "properties": {
-              "items": {
-                  "type": "array",
-                  "items": {
-                      "type": "object",
-                      "properties": {
-                          "name": { "type": "string" },
-                          "price": { "type": "number" }
-                      }
-                  }
-              }
+            "name": { "type": "string" },
+            "price": { "type": "number" }
           }
+        }
       }
-  }'</code></pre>
+    }
+  }
+}'</code></pre>
 
     <h2>Documentation</h2>
     <h3>API Headers</h3>
