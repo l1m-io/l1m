@@ -49,12 +49,18 @@ async function testJsonObject() {
       type: "object",
       properties: {
         companyName: { type: "string", description: "The name of the company" },
-        foundedYear: { type: "number", description: "The year the company was founded" },
+        foundedYear: {
+          type: "number",
+          description: "The year the company was founded",
+        },
         address: {
           type: "object",
           properties: {
             street: { type: "string" },
-            city: { type: "string", description: "The city the company is located in" },
+            city: {
+              type: "string",
+              description: "The city the company is located in",
+            },
             state: { type: "string" },
             country: { type: "string" },
             zipcode: { type: "string" },
@@ -68,7 +74,10 @@ async function testJsonObject() {
             type: "object",
             properties: {
               name: { type: "string" },
-              employees: { type: "number", description: "The number of employees in the department" },
+              employees: {
+                type: "number",
+                description: "The number of employees in the department",
+              },
             },
           },
         },
@@ -83,7 +92,6 @@ async function testJsonObject() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
         "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
@@ -192,7 +200,6 @@ async function testBase64JsonObject() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
         "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
@@ -247,7 +254,6 @@ async function testJsonDescriptions() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
         "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
@@ -294,7 +300,6 @@ async function testImage() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
         "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
@@ -341,7 +346,6 @@ async function testInvalidInputType() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
         "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
@@ -380,7 +384,8 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
   const providerMessageMap = {
     openrouter: "No auth credentials found",
     groq: "Invalid API Key",
-    openai: "Incorrect API key provided: INVALID. You can find your API key at https://platform.openai.com/account/api-keys.",
+    openai:
+      "Incorrect API key provided: INVALID. You can find your API key at https://platform.openai.com/account/api-keys.",
   };
 
   const response = await fetch(
@@ -389,7 +394,6 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
         "x-provider-url": providerMap[provider],
         "x-provider-model": "INVALID",
         "x-provider-key": "INVALID",
@@ -423,14 +427,12 @@ async function testInvalidSchema() {
     },
   };
 
-
   const response = await fetch(
     process.env.TEST_SERVER ?? "http://localhost:3000/structured",
     {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
         "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
@@ -457,7 +459,6 @@ async function testInvalidSchema() {
     model: process.env.TEST_PROVIDER_MODEL,
   });
 
-
   await runTest("General", testJsonObject);
   await runTest("General (base64)", testBase64JsonObject);
 
@@ -467,7 +468,9 @@ async function testInvalidSchema() {
   await runTest("Invalid type", testInvalidInputType);
 
   await runTest("Invalid groq API Key", () => testInvalidApiKey("groq"));
-  await runTest("Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
+  await runTest("Invalid openRouter API Key", () =>
+    testInvalidApiKey("openrouter")
+  );
   await runTest("Invalid OpenAI API Key", () => testInvalidApiKey("openai"));
 
   await runTest("Invalid schema", testInvalidSchema);
