@@ -18,8 +18,6 @@ Extracts structured data from content according to the provided schema.
 - `x-provider-key` (optional): API key for custom LLM provider
 - `x-cache-key` (optional): Custom cache key
 
-**Note:** If any `x-provider-*` header is set, all three must be provided.
-
 **Request Body:**
 - `raw` (string, optional): Raw text content, base64 in the case of image / audio
 - `url` (string, optional): URL to fetch content from
@@ -74,10 +72,6 @@ curl -X POST http://localhost:3000/structured \
 ## Environment Variables
 
 - `REDIS_URL`: The URL of the Redis cache (optional, caching is disabled if not set)
-- `DEFAULT_BEDROCK_MODEL`: The default AWS Bedrock model to use if no custom provider is specified
-- `AWS_REGION`: The AWS region to use for Bedrock
-- `AWS_ACCESS_KEY_ID`: The AWS access key ID to use for Bedrock
-- `AWS_SECRET_ACCESS_KEY`: The AWS secret access key to use for Bedrock
 
 ## Development
 
