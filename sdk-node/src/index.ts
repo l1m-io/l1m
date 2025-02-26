@@ -81,7 +81,6 @@ export class L1M {
     { input, schema }: StructuredRequestInput<T>,
     options?: RequestOptions
   ): Promise<TOutput> {
-    const cacheKey = options?.cacheKey;
 
     const provider = this.provider ?? options?.provider;
 
