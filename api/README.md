@@ -19,15 +19,11 @@ Extracts structured data from content according to the provided schema.
 - `x-cache-key` (optional): Custom cache key
 
 **Request Body:**
-- `raw` (string, optional): Raw text content, base64 in the case of image / audio
-- `url` (string, optional): URL to fetch content from
+- `input` (string): Text content or base64 encoded image data
 - `schema` (object): JSON Schema defining the structure to extract
 
-**Note:** Either `raw` or `url` must be provided, but not both.
-
-**Supported URL MIME Types:**
-- `text/plain`
-- `application/json`
+**Supported Data Types:**
+Base64 encoded image data can be in one of the following formats:
 - `image/jpeg`
 - `image/png`
 
@@ -36,7 +32,7 @@ Extracts structured data from content according to the provided schema.
 curl -X POST http://localhost:3000/structured \
   -H "Content-Type: application/json" \
   -d '{
-    "raw": "John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
+    "input": "John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
     "schema": {
       "type": "object",
       "properties": {
@@ -59,7 +55,7 @@ curl -X POST http://localhost:3000/structured \
 curl -X POST http://localhost:3000/structured \
   -H "Content-Type: application/json" \
   -d '{
-    "url": "https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png",
+    "input": "<BASE64_ENCODED_IMAGE_DATA>",
     "schema": {
       "type": "object",
       "properties": {

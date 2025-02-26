@@ -2,29 +2,51 @@ import axios, { AxiosInstance } from 'axios';
 
 type ClientOptions = {
   baseUrl?: string;
-};
-
-type StructuredRequestInput = {
-  raw?: string;
-  url?: string;
-  schema?: unknown;
-};
-
-type RequestOptions = {
+  /**
+   * Optional default provider details. This can be overridden per request
+   */
   provider?: {
     model: string,
     url: string,
     key: string,
+  }
+};
+
+type StructuredRequestInput = {
+  /**
+   * String input (Base64 encoded if image data)
+   */
+  input: string;
+  /**
+   * JSON schema to be returned
+   */
+  schema: unknown;
+};
+
+type RequestOptions = {
+  /**
+   * Provider details, optional if the client is initialized with a provider
+   */
+  provider: {
+    model: string,
+    url: string,
+    key: string,
   },
+  /**
+   * Optional cache key
+   */
   cacheKey?: string
 };
 
 export class L1M {
   private baseUrl: string;
   private client: AxiosInstance;
+  private provider?: RequestOptions['provider'];
 
   constructor(options?: ClientOptions) {
-    this.baseUrl = options?.baseUrl || 'http://localhost:3000';
+    this.baseUrl = options?.baseUrl || 'https://api.l1m.io';
+
+    this.provider = options?.provider;
 
     this.client = axios.create({
       baseURL: this.baseUrl,
@@ -34,27 +56,28 @@ export class L1M {
     });
   }
 
-  async structured(input: StructuredRequestInput, options?: RequestOptions): Promise<unknown> {
-    const { raw, url, schema } = input;
-    const { provider, cacheKey } = options || {};
+  async structured({ input, schema }: StructuredRequestInput, options?: RequestOptions): Promise<unknown> {
+    const cacheKey = options?.cacheKey;
+
+    const provider = this.provider ?? options?.provider;
+
+    if (!provider) {
+      throw new Error('No provider specified');
+    }
 
     const result = await this.client.post('/structured', {
-      raw,
-      url,
+      input,
       schema,
     }, {
-      headers: {
-        ...(provider ? {
+        headers: {
           "x-provider-model": provider.model,
           "x-provider-url": provider.url,
-          "x-provider-key": provider.key
-        } : {}),
-        ...(cacheKey ? {
-          "x-cache-key": cacheKey
-        } : {})
-
-      }
-    });
+          "x-provider-key": provider.key,
+          ...(cacheKey ? {
+            "x-cache-key": cacheKey
+          } : {})
+        }
+      });
 
     return result.data;
   }

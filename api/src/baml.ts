@@ -103,12 +103,12 @@ export const buildClientRegistry = (provider: {
 }
 
 export const structured = async ({
-  raw,
+  input,
   type,
   schema,
   clientRegistry
 }:{
-  raw: string,
+  input: string,
   type?: string,
   schema: Schema,
   clientRegistry?: ClientRegistry
@@ -128,10 +128,10 @@ export const structured = async ({
 
   try {
     if (type && type.startsWith("image/")) {
-      return await b.ExtractImage(Image.fromBase64(type, raw), {tb, clientRegistry});
+      return await b.ExtractImage(Image.fromBase64(type, input), {tb, clientRegistry});
     }
 
-    return await b.ExtractString(raw, {tb, clientRegistry});
+    return await b.ExtractString(input, {tb, clientRegistry});
   } catch (error) {
 
     // Special handling for non-parsed Baml errors. i.e OpenRouter 402 errors
