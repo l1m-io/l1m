@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/yourusername/l1m"
+	"github.com/inferablehq/l1m"
 )
 
 func main() {
@@ -15,9 +15,9 @@ func main() {
 	client := l1m.NewClient(&l1m.ClientOptions{
 		BaseURL: "https://api.l1m.io",
 		Provider: &l1m.Provider{
-			Model: "claude-3-opus-20240229",
+			Model: "claude-3-5-sonnet-latest",
 			URL:   "https://api.anthropic.com/v1/messages",
-			Key:   "your-api-key",
+			Key:   "my_secret_key",
 		},
 	})
 
