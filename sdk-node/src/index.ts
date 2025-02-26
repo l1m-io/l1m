@@ -1,6 +1,18 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
+
+export class L1MError extends Error {
+  statusCode?: number;
+  body?: any;
+
+  constructor(message: string, statusCode?: number, body?: any) {
+    super(message);
+    this.name = 'L1MError';
+    this.statusCode = statusCode;
+    this.body = body;
+  }
+}
 
 type ClientOptions = {
   baseUrl?: string;
@@ -64,24 +76,37 @@ export class L1M {
     const provider = this.provider ?? options?.provider;
 
     if (!provider) {
-      throw new Error('No provider specified');
+      throw new L1MError('No provider specified');
     }
 
-    const result = await this.client.post('/structured', {
-      input,
-      schema: zodToJsonSchema(schema)
-    }, {
-        headers: {
-          "x-provider-model": provider.model,
-          "x-provider-url": provider.url,
-          "x-provider-key": provider.key,
-          ...(cacheKey ? {
-            "x-cache-key": cacheKey
-          } : {})
-        }
-      });
+    try {
+      const result = await this.client.post('/structured', {
+        input,
+        schema: zodToJsonSchema(schema)
+      }, {
+          headers: {
+            "x-provider-model": provider.model,
+            "x-provider-url": provider.url,
+            "x-provider-key": provider.key,
+            ...(cacheKey ? {
+              "x-cache-key": cacheKey
+            } : {})
+          }
+        });
 
-    return result.data;
+      return result.data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const axiosError = error as AxiosError;
+        const statusCode = axiosError.response?.status;
+        const errorMessage = (axiosError.response?.data as any).message || axiosError.message || 'An error occurred with the L1M API';
+        const body = axiosError.response?.data;
+
+        throw new L1MError(errorMessage, statusCode, body);
+      }
+
+      throw error;
+    }
   }
 }
 
