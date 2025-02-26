@@ -1,6 +1,6 @@
 # l1m
 
-A low-level API to extract structured data from text and images using LLMs.
+A Proxy to extract structured data from text and images using LLMs.
 
 ## API Endpoints
 
