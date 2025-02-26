@@ -40,7 +40,6 @@ def test_call_structured():
 
     l1m = L1M(
         options=ClientOptions(
-            base_url="http://localhost:3000",
             provider=ProviderOptions(
                 model=os.environ["TEST_PROVIDER_MODEL"],
                 key=os.environ["TEST_PROVIDER_KEY"],
@@ -81,7 +80,6 @@ def test_readme_example():
     # Initialize the client as shown in the README
     client = L1M(
         options=ClientOptions(
-            base_url="http://localhost:3000",  # Use test server instead of production
             provider=ProviderOptions(
                 model=os.environ["TEST_PROVIDER_MODEL"],
                 key=os.environ["TEST_PROVIDER_KEY"],
@@ -116,7 +114,6 @@ def test_invalid_api_key():
 
     l1m = L1M(
         options=ClientOptions(
-            base_url="http://localhost:3000",
             provider=ProviderOptions(
                 model=os.environ["TEST_PROVIDER_MODEL"],
                 key="INVALID",

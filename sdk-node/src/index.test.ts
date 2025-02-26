@@ -15,7 +15,6 @@ async function runTest(name: string, fn: () => Promise<void>) {
 
 async function testReadme() {
   const l1m = new L1M({
-    baseUrl: "http://localhost:3000",
     provider: {
       model: process.env.TEST_PROVIDER_MODEL!,
       key: process.env.TEST_PROVIDER_KEY!,
@@ -49,7 +48,6 @@ async function testReadme() {
 
 async function testCallStructuredZod() {
   const l1m = new L1M({
-    baseUrl: "http://localhost:3000",
     provider: {
       model: process.env.TEST_PROVIDER_MODEL!,
       key: process.env.TEST_PROVIDER_KEY!,
@@ -77,7 +75,6 @@ async function testCallStructuredZod() {
 
 async function testInvalidApiKey() {
   const l1m = new L1M({
-    baseUrl: "http://localhost:3000",
     provider: {
       model: process.env.TEST_PROVIDER_MODEL!,
       key: "INVALID",
