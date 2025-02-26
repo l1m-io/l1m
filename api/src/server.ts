@@ -111,7 +111,17 @@ const router = s.router(apiContract, {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const duration = seconds * 1000 + nanoseconds / 1000000;
 
-      const ttl = headers["x-cache-ttl"] ?? 0;
+      const ttl = parseInt(headers["x-cache-ttl"] ?? "0");
+
+      if (ttl < 0 || ttl > 60 * 60 * 24 * 30) {
+        return {
+          status: 400,
+          body: {
+            message:
+              "Invalid cache TTL. Must be between 0 and 604800 seconds (7 days).",
+          },
+        };
+      }
 
       const cacheKey: string | null = ttl
         ? generateCacheKey([
