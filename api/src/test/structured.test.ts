@@ -11,8 +11,9 @@ async function runTest(name: string, fn: () => Promise<void>) {
   }
 }
 
-// When these vars are set, we will test with a custom model provider
-const testCustomProvider = process.env.TEST_PROVIDER_MODEL && process.env.TEST_PROVIDER_URL && process.env.TEST_PROVIDER_KEY;
+assert(process.env.TEST_PROVIDER_MODEL, "TEST_PROVIDER_MODEL must be set");
+assert(process.env.TEST_PROVIDER_URL, "TEST_PROVIDER_URL must be set");
+assert(process.env.TEST_PROVIDER_KEY, "TEST_PROVIDER_KEY must be set");
 
 async function testJsonObject() {
   const testData = {
@@ -83,10 +84,9 @@ async function testJsonObject() {
       headers: {
         "Content-Type": "application/json",
         "x-cache-key": Math.random().toString(),
-        ...(testCustomProvider ? {
-          "x-provider-url": process.env.TEST_PROVIDER_URL,
-          "x-provider-key": process.env.TEST_PROVIDER_KEY,
-          "x-provider-model": process.env.TEST_PROVIDER_MODEL } : {})
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
       },
       body: JSON.stringify(testData),
     }
@@ -142,10 +142,9 @@ async function testImageUrl() {
       headers: {
         "Content-Type": "application/json",
         "x-cache-key": Math.random().toString(),
-        ...(testCustomProvider ? {
-          "x-provider-url": process.env.TEST_PROVIDER_URL,
-          "x-provider-key": process.env.TEST_PROVIDER_KEY,
-          "x-provider-model": process.env.TEST_PROVIDER_MODEL } : {})
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
       },
       body: JSON.stringify(testData),
     }
@@ -183,10 +182,9 @@ async function testInvalidInputUrl() {
       headers: {
         "Content-Type": "application/json",
         "x-cache-key": Math.random().toString(),
-        ...(testCustomProvider ? {
-          "x-provider-url": process.env.TEST_PROVIDER_URL,
-          "x-provider-key": process.env.TEST_PROVIDER_KEY,
-          "x-provider-model": process.env.TEST_PROVIDER_MODEL } : {})
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
       },
       body: JSON.stringify(testData),
     }
@@ -217,10 +215,9 @@ async function testInvalidInputUrlType() {
       headers: {
         "Content-Type": "application/json",
         "x-cache-key": Math.random().toString(),
-        ...(testCustomProvider ? {
-          "x-provider-url": process.env.TEST_PROVIDER_URL,
-          "x-provider-key": process.env.TEST_PROVIDER_KEY,
-          "x-provider-model": process.env.TEST_PROVIDER_MODEL } : {})
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
       },
       body: JSON.stringify(testData),
     }
@@ -283,44 +280,12 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
   assert(result.providerResponse.error.message === providerMessageMap[provider], "Error message should be forwarded from provider");
 }
 
-
-async function testPartialProviderDetails() {
-  const testData = {
-    raw: "abc123",
-    schema: {},
-  };
-
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-cache-key": Math.random().toString(),
-        "x-provider-model": "llama-3.2-11b-vision-preview",
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result,
-    status: response.status
-  });
-
-  assert(response.status === 400);
-  assert(result.headerErrors.issues[0].message === "If any x-provider-* header is set, then all x-provider headers must be set");
-}
-
 // Main test runner - executes all tests
 (async function runAllTests() { console.log("Starting tests...");
-  if (testCustomProvider) {
-    console.log("Testing custom provider", {
-      url: process.env.TEST_PROVIDER_URL,
-      model: process.env.TEST_PROVIDER_MODEL
-    });
-  }
+  console.log("Testing with provider", {
+    url: process.env.TEST_PROVIDER_URL,
+    model: process.env.TEST_PROVIDER_MODEL
+  });
 
   await runTest("General", testJsonObject);
   await runTest("Image: URL", testImageUrl);
@@ -330,7 +295,6 @@ async function testPartialProviderDetails() {
 
   await runTest("Provider: Invalid groq API Key", () => testInvalidApiKey("groq"));
   await runTest("Provider: Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
-  await runTest("Provider: Partial details", testPartialProviderDetails);
 
   console.log("All tests completed");
 })().catch(console.error);

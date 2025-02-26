@@ -79,9 +79,6 @@ curl -X POST http://localhost:3000/structured \
 # Start development server with hot reload
 npm run dev
 
-# Run tests (Against default LLM provider)
-npm run test
-
 # Run tests (Against groq)
 export TEST_PROVIDER_MODEL="llama-3.2-90b-vision-preview"
 export TEST_PROVIDER_URL="https://api.groq.com/openai/v1"

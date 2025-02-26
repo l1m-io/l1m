@@ -2,7 +2,7 @@ import { b } from "./baml_client"
 import { Schema } from "jsonschema";
 import TypeBuilder from "./baml_client/type_builder";
 import { ClassBuilder } from "@boundaryml/baml/type_builder";
-import { ClientRegistry, Image, Audio, BamlClientHttpError } from "@boundaryml/baml";
+import { ClientRegistry, Image, BamlClientHttpError } from "@boundaryml/baml";
 import { z } from "zod"
 
 const addJsonProperty = ({
@@ -69,19 +69,11 @@ const addJsonProperty = ({
 }
 
 export const buildClientRegistry = (provider: {
-  url?: string,
-  key?: string
-  model?: string
+  url: string,
+  key: string
+  model: string
 }) => {
   const clientRegistry = new ClientRegistry();
-
-  if (!provider.url || !provider.key || !provider.model) {
-    clientRegistry.addLlmClient("bedrock", "aws-bedrock", {
-      model: process.env.DEFAULT_BEDROCK_MODEL
-    });
-    clientRegistry.setPrimary("bedrock");
-    return clientRegistry;
-  }
 
   if (provider.url.includes("api.openai.com")) {
     clientRegistry.addLlmClient("openai", "openai", {

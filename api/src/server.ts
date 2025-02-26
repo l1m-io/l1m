@@ -7,7 +7,6 @@ import fastify from "fastify";
 import { apiContract } from "./contract";
 import { initServer } from "@ts-rest/fastify";
 import { redis } from "./redis";
-import { Schema } from "jsonschema";
 import { buildClientRegistry, structured } from "./baml";
 import {
   BamlClientFinishReasonError,
@@ -54,6 +53,10 @@ const router = s.router(apiContract, {
   },
   structured: async ({ body, request, headers }) => {
     const startTime = process.hrtime();
+
+    const providerKey = headers["x-provider-key"];
+    const providerModel = headers["x-provider-model"];
+    const providerUrl = headers["x-provider-url"];
 
     const schema = body.schema;
     const url = body.url;
@@ -124,17 +127,17 @@ const router = s.router(apiContract, {
       let cacheKey: string = generateCacheKey([
         raw,
         JSON.stringify(schema),
-        headers["x-provider-key"] ?? "",
+        providerKey,
+        providerModel,
       ]);
 
-      if (headers["x-cache-key"] && headers["x-provider-key"]) {
+      if (headers["x-cache-key"]) {
         cacheKey = generateCacheKey([
           headers["x-cache-key"],
-          headers["x-provider-key"],
+          providerKey,
+          providerModel,
         ]);
       }
-
-      // TODO: Validate model support
 
       const fromCache = await redis?.get(cacheKey);
 
