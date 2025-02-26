@@ -2,6 +2,7 @@ import crypto from "crypto";
 import fastify from "fastify";
 
 import { apiContract } from "./contract";
+import { dereferenceSync } from "dereference-json-schema";
 import { initServer } from "@ts-rest/fastify";
 import { redis } from "./redis";
 import { buildClientRegistry, parseJsonSubstring, structured } from "./baml";
@@ -56,7 +57,8 @@ const router = s.router(apiContract, {
     const providerModel = headers["x-provider-model"];
     const providerUrl = headers["x-provider-url"];
 
-    const { input, schema } = body;
+    const { input } = body;
+    let { schema } = body;
 
     if (!validateJsonSchema(schema)) {
       return {
@@ -66,6 +68,9 @@ const router = s.router(apiContract, {
         },
       };
     }
+
+    // Remove refs
+    schema = dereferenceSync(schema);
 
     const type = await inferMimeType(input);
 

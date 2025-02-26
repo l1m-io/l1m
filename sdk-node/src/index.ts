@@ -102,7 +102,7 @@ export class L1M {
           }
         });
 
-      return result.data;
+      return result.data?.data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError;

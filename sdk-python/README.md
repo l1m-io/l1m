@@ -14,32 +14,31 @@ pip install l1m
 from pydantic import BaseModel
 from l1m import L1M, ClientOptions, ProviderOptions
 
-# Define a schema for the response
-class UserProfile(BaseModel):
-    name: str
-    age: int
-    bio: str
+class ContactDetails(BaseModel):
+  email: str
+  phone: str
 
-# Initialize the client
+class UserProfile(BaseModel):
+  name: str
+  company: str
+  contactInfo: ContactDetails
+
+
 client = L1M(
-    options=ClientOptions(
-        provider=ProviderOptions(
-            model="gpt-4",
-            url="https://api.openai.com/v1/chat/completions",
-            key="your-openai-key"
-        )
+  options=ClientOptions(
+    provider=ProviderOptions(
+      model="gpt-4",
+      url="https://api.openai.com/v1/chat/completions",
+      key="your-openai-key"
     )
+  )
 )
 
 # Generate a structured response
 user_profile = client.structured(
-    input="Extract a user profile from this text: John Smith is a 30 year old software engineer who loves hiking and coding.",
-    schema=UserProfile
+  input="John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
+  schema=UserProfile
 )
-
-print(user_profile.name)  # John Smith
-print(user_profile.age)   # 30
-print(user_profile.bio)   # Software engineer who loves hiking and coding.
 ```
 
 ## Development

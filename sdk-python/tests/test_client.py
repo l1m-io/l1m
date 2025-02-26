@@ -6,7 +6,7 @@ import os
 import pytest
 import requests
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from l1m import ClientOptions, L1M, L1MError, ProviderOptions
 
@@ -18,14 +18,15 @@ class CharacterSchema(BaseModel):
 
     character: str
 
+class ContactDetails(BaseModel):
+  email: str
+  phone: str
 
 class UserProfile(BaseModel):
     """Schema for user profile extraction test."""
-
     name: str
-    age: int = Field(default=0)  # Add default value to handle missing field
-    bio: str = ""  # Add default value to handle missing field
-
+    company: str
+    contactInfo: ContactDetails
 
 def test_call_structured():
     """Test structured method with Pydantic model."""
@@ -91,7 +92,7 @@ def test_readme_example():
 
     # Generate a structured response using the example from the README
     user_profile = client.structured(
-        input="Extract a user profile from this text: John Smith is a 30 year old software engineer who loves hiking and coding.",
+        input="John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
         schema=UserProfile
     )
 
@@ -99,16 +100,9 @@ def test_readme_example():
 
     # Verify the result matches expected output
     assert user_profile.name == "John Smith"
-
-    # Check age if it's present
-    if user_profile.age > 0:  # Only verify if we got a valid age
-        assert user_profile.age == 30
-
-    # Check bio content if it's present
-    if user_profile.bio:
-        assert any(term in user_profile.bio.lower() for term in ["software engineer", "engineer"])
-        assert any(term in user_profile.bio.lower() for term in ["hiking", "hike"])
-        assert any(term in user_profile.bio.lower() for term in ["coding", "code"])
+    assert user_profile.company == "Acme Inc."
+    assert user_profile.contactInfo.email == "john.smith@example.com"
+    assert user_profile.contactInfo.phone == "(555) 123-4567"
 
 
 def test_invalid_api_key():

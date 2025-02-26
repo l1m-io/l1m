@@ -102,7 +102,6 @@ class L1M:
         try:
             # Convert Pydantic model to JSON schema
             schema_dict = schema.model_json_schema()
-
             headers = {
                 "x-provider-model": provider.model,
                 "x-provider-url": provider.url,

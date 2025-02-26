@@ -13,6 +13,40 @@ async function runTest(name: string, fn: () => Promise<void>) {
   }
 }
 
+async function testReadme() {
+  const l1m = new L1M({
+    baseUrl: "http://localhost:3000",
+    provider: {
+      model: process.env.TEST_PROVIDER_MODEL!,
+      key: process.env.TEST_PROVIDER_KEY!,
+      url: process.env.TEST_PROVIDER_URL!,
+    }
+  });
+
+  const input = "John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.";
+
+  const result = await l1m.structured({
+    input,
+    schema: z.object({
+      name: z.string(),
+      company: z.string(),
+      contactInfo: z.object({
+        email: z.string(),
+        phone: z.string()
+      })
+    })
+  });
+
+  console.log("Text Result", {
+    result,
+  });
+
+  assert.strictEqual(result.name, "John Smith");
+  assert.strictEqual(result.company, "Acme Inc.");
+  assert.strictEqual(result.contactInfo.email, "john.smith@example.com");
+  assert.strictEqual(result.contactInfo.phone, "(555) 123-4567");
+}
+
 async function testCallStructuredZod() {
   const l1m = new L1M({
     baseUrl: "http://localhost:3000",
@@ -38,7 +72,7 @@ async function testCallStructuredZod() {
     result,
   });
 
-  assert.strictEqual((result as any).data.character, "Shrek");
+  assert.strictEqual(result.character, "Shrek");
 }
 
 async function testInvalidApiKey() {
@@ -75,6 +109,7 @@ async function testInvalidApiKey() {
 
 // Main test runner - executes all tests
 (async function runAllTests() { console.log("Starting tests...");
+  await runTest("Readme", testReadme);
   await runTest("structured (zod)", testCallStructuredZod);
   await runTest("invalid api key", testInvalidApiKey);
 
