@@ -12,8 +12,8 @@ import {
   BamlValidationError,
 } from "@boundaryml/baml";
 import { inferMimeType } from "./base64";
-import { validateJson, validateJsonSchema } from "./schema";
-import { getDemoProvider } from "./demo-provider";
+import { getDemoData } from "./demo-provider";
+import { illegalSchemaCheck, validateJson, validateJsonSchema } from "./schema";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -54,22 +54,28 @@ const router = s.router(apiContract, {
   structured: async ({ body, request, headers }) => {
     const startTime = process.hrtime();
 
-    let providerKey = headers["x-provider-key"];
+    const providerKey = headers["x-provider-key"];
     const providerModel = headers["x-provider-model"];
     const providerUrl = headers["x-provider-url"];
 
     const { input } = body;
     let { schema } = body;
 
-    const demoProvider = getDemoProvider({
+    const demoData = getDemoData({
       input,
+      schema: JSON.stringify(schema),
       providerKey,
       providerModel,
       providerUrl,
     });
 
-    if (demoProvider) {
-      providerKey = demoProvider.providerKey;
+    if (demoData) {
+      return {
+        status: 200,
+        body: {
+          data: demoData,
+        },
+      };
     }
 
     if (!validateJsonSchema(schema)) {
@@ -77,6 +83,16 @@ const router = s.router(apiContract, {
         status: 400,
         body: {
           message: "Provided JSON schema is invalid",
+        },
+      };
+    }
+
+    const schemaError = illegalSchemaCheck(schema);
+    if (schemaError) {
+      return {
+        status: 400,
+        body: {
+          message: schemaError,
         },
       };
     }

@@ -17,10 +17,13 @@
     }
 
     pre {
-      background: #f5f5f5;
-      padding: 1rem;
+      background: #f8f8f8;
+      padding: 1.5rem;
       overflow-x: auto;
-      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin: 1.5rem 0;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     code {
@@ -69,7 +72,7 @@
     /* Grayscale theme for Prism */
     code[class*="language-"],
     pre[class*="language-"] {
-      color: #333;
+      color: #383a42;
       text-shadow: none;
     }
 
@@ -77,50 +80,102 @@
     .token.prolog,
     .token.doctype,
     .token.cdata {
-      color: #777;
+      color: #a0a1a7;
       font-style: italic;
     }
 
     .token.function,
     .token.keyword {
-      color: #111;
-      font-weight: 600;
+      color: #a626a4;
+      font-weight: normal;
     }
 
     .token.string {
-      color: #444;
+      color: #50a14f;
     }
 
     .token.number {
-      color: #222;
-      font-weight: 500;
+      color: #986801;
+      font-weight: normal;
     }
 
     .token.property {
-      color: #555;
+      color: #e45649;
     }
 
     .token.punctuation {
-      color: #666;
+      color: #383a42;
     }
 
     .token.operator {
-      color: #444;
+      color: #0184bc;
       font-weight: normal;
     }
 
     .token.constant {
-      color: #222;
-      font-weight: 500;
+      color: #986801;
+      font-weight: normal;
     }
 
     .token.url {
-      color: #444;
+      color: #4078f2;
       text-decoration: underline;
     }
 
     code {
       font-size: 12px;
+    }
+
+    /* Style for bash/shell commands */
+    .language-bash .token.operator,
+    .language-bash .token.parameter {
+      color: #e45649;
+    }
+
+    .language-bash .token.function {
+      color: #4078f2;
+      font-weight: normal;
+    }
+
+    /* Update the -H and -d parameter colors */
+    .token.parameter {
+      color: #986801;
+    }
+
+    /* Style for JSON content */
+    .language-json .token.property {
+      color: #e45649;
+    }
+
+    .language-json .token.string {
+      color: #50a14f;
+    }
+
+    .language-json .token.number {
+      color: #986801;
+    }
+
+    /* Adjust spacing in code blocks */
+    pre code {
+      font-family: Monaco, Consolas, 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* Remove padding from code elements inside pre */
+    pre code.language-bash,
+    pre code.language-json {
+      padding: 0;
+      background: transparent;
+    }
+
+    /* Override Prism styles */
+    code[class*="language-"],
+    pre[class*="language-"] {
+      text-shadow: none;
+      font-family: Monaco, Consolas, 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -152,32 +207,32 @@
 
   <h2>Quick Start</h2>
   <h3>Text Example</h3>
-  <pre><code class="language-bash" style="font-size: 12px;">curl -X POST https://api.l1m.io/structured \
-  -H "Content-Type: application/json" \
-  -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
-  -H "X-Provider-Key: sk_demo" \
-  -H "X-Provider-Model: claude-3-5-sonnet-latest" \
-  -d '{
-      "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
-      "schema": {
-          "type": "object",
-          "properties": {
-              "events": {
-                  "type": "array",
-                  "items": {
-                      "type": "object",
-                      "properties": {
-                          "year": { "type": "number" },
-                          "event": { "type": "string" }
-                      }
-                  }
-              }
-          }
-      }
-  }'</code></pre>
+  <pre><code class="language-bash">curl -X POST https://api.l1m.io/structured \
+-H "Content-Type: application/json" \
+-H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
+-H "X-Provider-Key: sk_demo" \
+-H "X-Provider-Model: claude-3-5-sonnet-latest" \
+-d '{
+    "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
+    "schema": {
+        "type": "object",
+        "properties": {
+            "events": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "year": { "type": "number" },
+                        "event": { "type": "string" }
+                    }
+                }
+            }
+        }
+    }
+}'</code></pre>
 
   <h3>Image Example</h3>
-  <pre><code class="language-bash" style="font-size: 12px;">curl -X POST https://api.l1m.io/structured \
+  <pre><code class="language-bash">curl -X POST https://api.l1m.io/structured \
   -H "Content-Type: application/json" \
   -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
   -H "X-Provider-Key: sk_demo" \
@@ -200,6 +255,34 @@
           }
       }
   }'</code></pre>
+
+  <h2>Documentation</h2>
+  <h3>API Headers</h3>
+  <ul>
+    <li><code>x-provider-model</code> (optional): Custom LLM model to use</li>
+    <li><code>x-provider-url</code> (optional): Custom LLM provider URL (OpenAI compatible or Anthropic API)</li>
+    <li><code>x-provider-key</code> (optional): API key for custom LLM provider</li>
+    <li><code>x-cache-ttl</code> (optional): Cache TTL in seconds.</li>
+    <ul>
+      <li>Cache key (generated) = hash(input + schema + x-provider-key + x-provider-model).</li>
+    </ul>
+  </ul>
+
+  <h3>Supported Data Types</h3>
+  <p>For images, base64 encoded data can be in one of the following formats:</p>
+  <ul>
+    <li><code>image/jpeg</code></li>
+    <li><code>image/png</code></li>
+  </ul>
+
+  <h2>SDKs</h2>
+  <p>l1m provides official SDKs for multiple programming languages to help you integrate structured data extraction into
+    your applications:</p>
+  <ul>
+    <li><strong>Node.js:</strong> <a href="https://github.com/inferablehq/l1m/tree/main/sdk-node">Node.js SDK</a></li>
+    <li><strong>Python:</strong> <a href="https://github.com/inferablehq/l1m/tree/main/sdk-python">Python SDK</a></li>
+    <li><strong>Go:</strong> <a href="https://github.com/inferablehq/l1m/tree/main/sdk-go">Go SDK</a></li>
+  </ul>
 
   <h2>Managed API Pricing</h2>
   <ul>

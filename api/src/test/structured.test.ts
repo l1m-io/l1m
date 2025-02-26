@@ -451,6 +451,46 @@ async function testInvalidSchema() {
   assert(result.message === "Provided JSON schema is invalid");
 }
 
+// We don't support min, max, or oneOf
+async function testNonCompliantSchema() {
+  const testData = {
+    input: "abc123",
+    schema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          minLength: 5,
+          maxLength: 10,
+        }
+      }
+    },
+  };
+
+  const response = await fetch(
+    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
+      },
+      body: JSON.stringify(testData),
+    }
+  );
+
+  const result = await response.json();
+  console.log("Result", {
+    result: JSON.stringify(result),
+    status: response.status,
+  });
+
+  assert(response.status === 400);
+  assert(result.message === "Disallowed property 'minLength' found in schema");
+}
+
 // Main test runner - executes all tests
 (async function runAllTests() {
   console.log("Starting tests...");
@@ -474,6 +514,7 @@ async function testInvalidSchema() {
   await runTest("Invalid OpenAI API Key", () => testInvalidApiKey("openai"));
 
   await runTest("Invalid schema", testInvalidSchema);
+  await runTest("Test Min key", testNonCompliantSchema);
 
   console.log("All tests completed");
 })().catch(console.error);
