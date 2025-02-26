@@ -187,6 +187,29 @@
       font-size: 13px;
       line-height: 1.5;
     }
+
+    /* Collapsible sections styling */
+    details {
+      margin: 1rem 0;
+      padding: 0.5rem;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+
+    details summary {
+      cursor: pointer;
+      padding: 0.5rem;
+      font-weight: bold;
+    }
+
+    details summary:hover {
+      background: #f5f5f5;
+    }
+
+    details[open] summary {
+      border-bottom: 1px solid #eee;
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 
@@ -237,6 +260,35 @@
   </ul>
 
   <h2>Quick Start</h2>
+  <h3>Image Example</h3>
+  <pre><code class="language-bash">curl -X POST https://api.l1m.io/structured \
+-H "Content-Type: application/json" \
+-H "X-Provider-Url: demo" \
+-H "X-Provider-Key: demo" \
+-H "X-Provider-Model: demo" \
+-d '{
+  "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "price": { "type": "number" }
+          }
+        }
+      }
+    }
+  }
+}'</code></pre>
+  <p style="color: #888; font-size: 12px; margin: 0.5rem 0 1.5rem;">
+    ↑ Copy and run this example in your terminal. The demo endpoints return pre-rendered LLM responses for quick
+    testing.
+  </p>
+
   <h3>Text Example</h3>
   <pre><code class="language-bash">curl -X POST https://api.l1m.io/structured \
 -H "Content-Type: application/json" \
@@ -266,34 +318,143 @@
     testing.
   </p>
 
-  <h3>Image Example</h3>
-  <pre><code class="language-bash">curl -X POST https://api.l1m.io/structured \
+  <h2>Recipes</h2>
+  <details>
+    <summary>Cache model response with a TTL</summary>
+    <pre><code class="language-bash">#!/bin/bash
+
+# Run the same request multiple times with caching enabled
+# A cache key is generated from the input, schema, provider key and model
+# Cache key = hash(input + schema + x-provider-key + x-provider-model)
+for i in {1..5}; do
+  curl -X POST https://api.l1m.io/structured \
+  -H "Content-Type: application/json" \
+  -H "X-Provider-Url: $PROVIDER_URL" \
+  -H "X-Provider-Key: $PROVIDER_KEY" \
+  -H "X-Provider-Model: $PROVIDER_MODEL" \
+  -H "X-Cache-TTL: 300" \
+  -d '{
+    "input": "The weather in San Francisco is sunny and 72°F",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "temperature": { "type": "number" },
+        "conditions": { "type": "string" }
+      }
+    }
+  }'
+  echo "\n--- Request $i completed ---\n"
+done
+
+# Only 1 LLM call will be made, subsequent calls will be served from cache
+# for the duration specified in X-Cache-TTL (300 seconds in this example)</code></pre>
+  </details>
+
+  <details>
+    <summary>Tool call example in bash</summary>
+    <pre><code class="language-bash">INPUT="Please find the user john.doe@example.com and get their details"
+
+# First call to determine which tool to use
+TOOL_RESPONSE=$(curl -X POST https://api.l1m.io/structured \
 -H "Content-Type: application/json" \
--H "X-Provider-Url: demo" \
--H "X-Provider-Key: demo" \
--H "X-Provider-Model: demo" \
+-H "X-Provider-Url: $PROVIDER_URL" \
+-H "X-Provider-Key: $PROVIDER_KEY" \
+-H "X-Provider-Model: $PROVIDER_MODEL" \
 -d '{
-  "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
+  "input": "$INPUT",
   "schema": {
     "type": "object",
     "properties": {
-      "items": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "price": { "type": "number" }
-          }
-        }
+      "selected_tool": {
+        "type": "string",
+        "enum": ["getUserByEmail", "getUserByName", "getUserById"],
+        "description": "Select the most appropriate tool based on the input"
       }
     }
   }
-}'</code></pre>
-  <p style="color: #888; font-size: 12px; margin: 0.5rem 0 1.5rem;">
-    ↑ Copy and run this example in your terminal. The demo endpoints return pre-rendered LLM responses for quick
-    testing.
-  </p>
+}')
+
+# Extract the selected tool from the response
+SELECTED_TOOL=$(echo $TOOL_RESPONSE | jq -r '.selected_tool')
+
+# Switch case to handle different tool types and extract appropriate arguments
+case $SELECTED_TOOL in
+  "getUserByEmail")
+    # Extract email argument
+    ARGS=$(curl -X POST https://api.l1m.io/structured \
+    -H "Content-Type: application/json" \
+    -H "X-Provider-Url: $PROVIDER_URL" \
+    -H "X-Provider-Key: $PROVIDER_KEY" \
+    -H "X-Provider-Model: $PROVIDER_MODEL" \
+    -d '{
+      "input": "$INPUT",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Extract the email address to use as argument"
+          }
+        }
+      }
+    }')
+    EMAIL=$(echo $ARGS | jq -r '.email')
+    echo "Calling getUserByEmail with email: $EMAIL"
+    ;;
+    
+  "getUserByName")
+    # Extract name argument
+    ARGS=$(curl -X POST https://api.l1m.io/structured \
+    -H "Content-Type: application/json" \
+    -H "X-Provider-Url: $PROVIDER_URL" \
+    -H "X-Provider-Key: $PROVIDER_KEY" \
+    -H "X-Provider-Model: $PROVIDER_MODEL" \
+    -d '{
+      "input": "$INPUT",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Extract the full name to use as argument"
+          }
+        }
+      }
+    }')
+    NAME=$(echo $ARGS | jq -r '.name')
+    echo "Calling getUserByName with name: $NAME"
+    ;;
+    
+  "getUserById")
+    # Extract ID argument
+    ARGS=$(curl -X POST https://api.l1m.io/structured \
+    -H "Content-Type: application/json" \
+    -H "X-Provider-Url: $PROVIDER_URL" \
+    -H "X-Provider-Key: $PROVIDER_KEY" \
+    -H "X-Provider-Model: $PROVIDER_MODEL" \
+    -d '{
+      "input": "$INPUT",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Extract the user ID to use as argument"
+          }
+        }
+      }
+    }')
+    ID=$(echo $ARGS | jq -r '.id')
+    echo "Calling getUserById with ID: $ID"
+    ;;
+    
+  *)
+    echo "Error: Unknown tool selected: $SELECTED_TOOL"
+    exit 1
+    ;;
+esac</code></pre>
+  </details>
 
   <h2>Documentation</h2>
   <h3>API Headers</h3>
