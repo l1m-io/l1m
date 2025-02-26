@@ -5,7 +5,7 @@ Python SDK for interacting with the L1M API.
 ## Installation
 
 ```bash
-pip install l1m
+pip install l1m-dot-io
 ```
 
 ## Usage
