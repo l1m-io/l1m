@@ -48,13 +48,13 @@ async function testJsonObject() {
     schema: {
       type: "object",
       properties: {
-        companyName: { type: "string" },
-        foundedYear: { type: "number" },
+        companyName: { type: "string", description: "The name of the company" },
+        foundedYear: { type: "number", description: "The year the company was founded" },
         address: {
           type: "object",
           properties: {
             street: { type: "string" },
-            city: { type: "string" },
+            city: { type: "string", description: "The city the company is located in" },
             state: { type: "string" },
             country: { type: "string" },
             zipcode: { type: "string" },
@@ -68,7 +68,7 @@ async function testJsonObject() {
             type: "object",
             properties: {
               name: { type: "string" },
-              employees: { type: "number" },
+              employees: { type: "number", description: "The number of employees in the department" },
             },
           },
         },
@@ -226,6 +226,47 @@ async function testBase64JsonObject() {
     Array.isArray(result.data.engineeringTeams) &&
       result.data.engineeringTeams.length === 3,
     "Engineering teams should be extracted as an array of length 3"
+  );
+}
+
+async function testJsonDescriptions() {
+  const testData = {
+    // Intentionally empty
+    input: "",
+    schema: {
+      type: "object",
+      properties: {
+        word: { type: "string", description: "Must be the word 'inference'" },
+      },
+    },
+  };
+
+  const response = await fetch(
+    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-cache-key": Math.random().toString(),
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
+      },
+      body: JSON.stringify(testData),
+    }
+  );
+
+  const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status,
+  });
+
+  assert(response.ok, "Response should be successful");
+
+  assert(
+    result.data.word === "inference",
+    "Description should be followed correctly"
   );
 }
 
@@ -419,6 +460,8 @@ async function testInvalidSchema() {
 
   await runTest("General", testJsonObject);
   await runTest("General (base64)", testBase64JsonObject);
+
+  await runTest("Descriptions", testJsonDescriptions);
 
   await runTest("Image", testImage);
   await runTest("Invalid type", testInvalidInputType);
