@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/inferablehq/l1m"
+	l1m "github.com/inferablehq/l1m/tree/main/sdk-go"
 )
 
 func main() {
