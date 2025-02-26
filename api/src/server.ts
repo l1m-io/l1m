@@ -1,7 +1,4 @@
-import assert from "assert";
-
 import crypto from "crypto";
-import retry from "async-retry";
 import fastify from "fastify";
 
 import { apiContract } from "./contract";
@@ -13,6 +10,7 @@ import {
   BamlClientHttpError,
   BamlValidationError,
 } from "@boundaryml/baml";
+import { inferMimeType } from "./base64";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -26,7 +24,6 @@ const generateCacheKey = (input: string[]) => {
 const validMimeTypes = [
   "text/plain",
   "application/json",
-
   "image/jpeg",
   "image/png",
 ];
@@ -58,42 +55,9 @@ const router = s.router(apiContract, {
     const providerModel = headers["x-provider-model"];
     const providerUrl = headers["x-provider-url"];
 
-    const schema = body.schema;
-    const url = body.url;
+    const { input, schema } = body;
 
-    let raw = body.raw;
-
-    let type: string | undefined;
-
-    if (url) {
-      try {
-        const result = await retry(
-          async () => {
-            const response = await fetch(url);
-            const buffer = await response.arrayBuffer();
-            return {
-              raw: Buffer.from(buffer).toString("base64"),
-              type: response.headers.get("content-type"),
-            };
-          },
-          { retries: 2 }
-        );
-
-        raw = result.raw;
-        type = result.type ?? type;
-      } catch {
-        server.log.warn({
-          route: "structured",
-          error: "Failed to fetch url contents",
-        });
-        return {
-          status: 400,
-          body: {
-            message: "Failed to fetch url contents",
-          },
-        };
-      }
-    }
+    const type = await inferMimeType(input);
 
     if (type && !validMimeTypes.includes(type)) {
       server.log.warn({
@@ -110,14 +74,10 @@ const router = s.router(apiContract, {
       };
     }
 
-    if (!raw) {
-      throw new Error("Could not find raw content");
-    }
-
     server.log.info({
       route: "structured",
       schemaType: schema.type,
-      contentLength: raw.length,
+      contentLength: input.length,
     });
 
     try {
@@ -125,7 +85,7 @@ const router = s.router(apiContract, {
       const duration = seconds * 1000 + nanoseconds / 1000000;
 
       let cacheKey: string = generateCacheKey([
-        raw,
+        input,
         JSON.stringify(schema),
         providerKey,
         providerModel,
@@ -144,13 +104,13 @@ const router = s.router(apiContract, {
       let result = fromCache
         ? JSON.parse(fromCache)
         : await structured({
-            raw,
+            input,
             type,
             schema,
             clientRegistry: buildClientRegistry({
-              url: headers["x-provider-url"],
-              key: headers["x-provider-key"],
-              model: headers["x-provider-model"],
+              url: providerUrl,
+              key: providerKey,
+              model: providerModel,
             }),
           });
 

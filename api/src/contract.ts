@@ -29,16 +29,9 @@ export const apiContract = c.router({
     path: "/structured",
     body: z
       .object({
-        raw: z.string().optional(),
-        url: z.string().optional(),
+        input: z.string(),
         schema: z.record(z.any()),
-      })
-      .refine(
-        (body) =>
-          (body.raw || body.url) &&
-          !((body.raw && body.url) || !(body.raw || body.url)),
-        "Either raw or url must be provided"
-      ),
+      }),
     headers: z
       .object({
       "x-provider-model": z.string(),
