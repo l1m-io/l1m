@@ -1,5 +1,6 @@
 import assert from "assert";
 import L1M from "..";
+import { z } from "zod";
 
 async function runTest(name: string, fn: () => Promise<void>) {
   try {
@@ -12,7 +13,7 @@ async function runTest(name: string, fn: () => Promise<void>) {
   }
 }
 
-async function testCallStructured() {
+async function testCallStructuredZod() {
   const l1m = new L1M({
     baseUrl: "http://localhost:3000",
     provider: {
@@ -28,12 +29,9 @@ async function testCallStructured() {
 
   const result = await l1m.structured({
     input,
-    schema: {
-      type: "object",
-      properties: {
-        character: { type: "string" },
-      },
-    }
+    schema: z.object({
+      character: z.string(),
+    })
   })
 
   console.log("Result", {
@@ -45,7 +43,7 @@ async function testCallStructured() {
 
 // Main test runner - executes all tests
 (async function runAllTests() { console.log("Starting tests...");
-  await runTest("structured", testCallStructured);
+  await runTest("structured (zod)", testCallStructuredZod);
 
   console.log("All tests completed");
 })().catch(console.error);

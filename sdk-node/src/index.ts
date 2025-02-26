@@ -1,4 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
+import { z } from 'zod';
+import zodToJsonSchema from 'zod-to-json-schema';
 
 type ClientOptions = {
   baseUrl?: string;
@@ -12,15 +14,15 @@ type ClientOptions = {
   }
 };
 
-type StructuredRequestInput = {
+type StructuredRequestInput<T extends z.ZodObject<any> | unknown> = {
   /**
    * String input (Base64 encoded if image data)
    */
   input: string;
   /**
-   * JSON schema to be returned
+   * Json Schema (or Zod) to be returned
    */
-  schema: unknown;
+  schema: T;
 };
 
 type RequestOptions = {
@@ -56,7 +58,7 @@ export class L1M {
     });
   }
 
-  async structured({ input, schema }: StructuredRequestInput, options?: RequestOptions): Promise<unknown> {
+  async structured<T extends z.ZodObject<any>, TOutput = z.infer<T>>({ input, schema }: StructuredRequestInput<T>, options?: RequestOptions): Promise<TOutput> {
     const cacheKey = options?.cacheKey;
 
     const provider = this.provider ?? options?.provider;
@@ -67,7 +69,7 @@ export class L1M {
 
     const result = await this.client.post('/structured', {
       input,
-      schema,
+      schema: zodToJsonSchema(schema)
     }, {
         headers: {
           "x-provider-model": provider.model,
