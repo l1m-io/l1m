@@ -197,7 +197,9 @@ export const structured = async ({
 }) => {
   const tb = new TypeBuilder();
 
-  if (schema.type === "object" && schema.properties) {
+  let additional = collectDescriptions(schema);
+
+  if (schema.properties) {
     Object.keys(schema.properties).forEach((key) =>
       addJsonProperty({
         tb,
@@ -214,13 +216,13 @@ export const structured = async ({
 
   try {
     if (type && type.startsWith("image/")) {
-      return await b.ExtractImage(Image.fromBase64(type, input), {
+      return await b.ExtractImage(Image.fromBase64(type, input), additional, {
         tb,
         clientRegistry,
       });
     }
 
-    return await b.ExtractString(input, { tb, clientRegistry });
+    return await b.ExtractString(input, additional, { tb, clientRegistry });
   } catch (error) {
     // Special handling for non-parsed Baml errors. i.e OpenRouter 402 errors
     if (
@@ -258,13 +260,11 @@ export const structured = async ({
 };
 
 // Attempt to parse a JSON object substring from a string
-const parseJsonSubstring = (raw: string): unknown | null => {
+export const parseJsonSubstring = (raw: string): unknown | undefined => {
   const jsonMatch = raw.match(/{.*}/s); // Match JSON-like content
   if (!jsonMatch) return null;
 
   try {
     return JSON.parse(jsonMatch[0]);
-  } catch {
-    return null;
-  }
+  } catch {}
 };
