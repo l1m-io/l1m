@@ -45,23 +45,45 @@ const addJsonProperty = ({
 
   if (property.type === "array") {
     if (property.items) {
-      const nestedCb = tb.addClass(key);
       if (Array.isArray(property.items)) {
-        addJsonProperty({
-          tb,
-          cb: nestedCb,
-          property: property.items[0],
-          key: `${key}_item`,
-        });
+        // For array of items, use the first item's schema
+        const item = property.items[0];
+
+        if (item.type === "object" && item.properties) {
+          const nestedCb = tb.addClass(key + "Item");
+          Object.keys(item.properties).forEach((propKey) =>
+            addJsonProperty({
+              tb,
+              cb: nestedCb,
+              property: item.properties![propKey],
+              key: propKey,
+            })
+          );
+          cb.addProperty(key, tb.list(nestedCb.type()));
+        } else {
+          // For primitive types in array
+          cb.addProperty(key, tb.list(getTypeForSchema(tb, item)));
+        }
       } else {
-        addJsonProperty({
-          tb,
-          cb: nestedCb,
-          property: property.items,
-          key: `${key}_item`,
-        });
+        const items = property.items;
+
+        // For single item schema
+        if (items.type === "object" && items.properties) {
+          const nestedCb = tb.addClass(key + "Item");
+          Object.keys(items.properties).forEach((propKey) =>
+            addJsonProperty({
+              tb,
+              cb: nestedCb,
+              property: items.properties![propKey],
+              key: propKey,
+            })
+          );
+          cb.addProperty(key, tb.list(nestedCb.type()));
+        } else {
+          // For primitive types in array
+          cb.addProperty(key, tb.list(getTypeForSchema(tb, items)));
+        }
       }
-      cb.addProperty(key, tb.list(nestedCb.type()));
     } else {
       // Default to string
       cb.addProperty(key, tb.list(tb.string()));
@@ -103,10 +125,13 @@ export const buildClientRegistry = (provider: {
   return clientRegistry;
 };
 
-
 // Recursively collect descriptions from properties within a schema in the format
 // <JSON path>: <description>
-const collectDescriptions = (schema: Schema, path: string = "", descriptions: string = "") => {
+const collectDescriptions = (
+  schema: Schema,
+  path: string = "",
+  descriptions: string = ""
+) => {
   if (!schema) {
     return descriptions;
   }
@@ -117,28 +142,36 @@ const collectDescriptions = (schema: Schema, path: string = "", descriptions: st
 
   if (schema.properties) {
     Object.keys(schema.properties).forEach((key) => {
-      const prop = schema.properties?.[key]
+      const prop = schema.properties?.[key];
 
       if (prop) {
-        descriptions = collectDescriptions(prop, `${path}.${key}`, descriptions);
+        descriptions = collectDescriptions(
+          prop,
+          `${path}.${key}`,
+          descriptions
+        );
       }
     });
   }
 
   if (schema.type === "array" && schema.items) {
-    let item = schema.items
+    let item = schema.items;
 
     if (Array.isArray(schema.items)) {
-      item = schema.items[0]
+      item = schema.items[0];
     }
 
     if (item) {
-      descriptions = collectDescriptions(schema.items as Schema, `${path}[]`, descriptions);
+      descriptions = collectDescriptions(
+        schema.items as Schema,
+        `${path}[]`,
+        descriptions
+      );
     }
   }
 
   return descriptions;
-}
+};
 
 export const structured = async ({
   input,
@@ -165,7 +198,9 @@ export const structured = async ({
       })
     );
   } else {
-    throw new Error("Schema has no properties");
+    throw new Error(
+      "Schema must be an object. Try wrapping your schema in an object."
+    );
   }
 
   try {
