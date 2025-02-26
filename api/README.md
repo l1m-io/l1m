@@ -13,21 +13,25 @@ POST /structured
 Extracts structured data from content according to the provided schema.
 
 **Headers:**
+
 - `x-provider-model` (optional): Custom LLM model to use
 - `x-provider-url` (optional): Custom LLM provider URL (OpenAI compatiable or Anthropic API)
 - `x-provider-key` (optional): API key for custom LLM provider
 - `x-cache-key` (optional): Custom cache key
 
 **Request Body:**
+
 - `input` (string): Text content or base64 encoded image data
 - `schema` (object): JSON Schema defining the structure to extract
 
 **Supported Data Types:**
 Base64 encoded image data can be in one of the following formats:
+
 - `image/jpeg`
 - `image/png`
 
 **Example Request (raw text):**
+
 ```bash
 curl -X POST http://localhost:3000/structured \
   -H "Content-Type: application/json" \
@@ -51,6 +55,7 @@ curl -X POST http://localhost:3000/structured \
 ```
 
 **Example Request (Image via URL):**
+
 ```bash
 curl -X POST http://localhost:3000/structured \
   -H "Content-Type: application/json" \

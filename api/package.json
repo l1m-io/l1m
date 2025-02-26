@@ -22,7 +22,7 @@
   "devDependencies": {
     "@flydotio/dockerfile": "^0.7.8",
     "@types/node": "^20.11.24",
-    "ts-node": "^10.9.2",
+    "prettier": "^3.2.5",
     "typescript": "^5.7.3"
   },
   "scripts": {
@@ -31,6 +31,7 @@
     "test": "tsx -r dotenv/config src/test/structured.test.ts",
     "build": "npm run baml-generate && tsc --build",
     "baml-generate": "baml-cli generate --from ./src/",
-    "watch": "tsc -w"
+    "watch": "tsc -w",
+    "format": "prettier --write \"**/*.{ts,js,json,md,html,css}\""
   }
 }

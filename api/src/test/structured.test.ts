@@ -59,7 +59,7 @@ async function testJsonObject() {
             country: { type: "string" },
             zipcode: { type: "string" },
             suite: { type: "string" },
-          }
+          },
         },
         engineeringTeams: { type: "array" },
         departments: {
@@ -69,7 +69,7 @@ async function testJsonObject() {
             properties: {
               name: { type: "string" },
               employees: { type: "number" },
-            }
+            },
           },
         },
       },
@@ -86,7 +86,7 @@ async function testJsonObject() {
         "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
       },
       body: JSON.stringify(testData),
     }
@@ -95,7 +95,7 @@ async function testJsonObject() {
   const result = await response.json();
   console.log("Result", {
     result,
-    status: response.status
+    status: response.status,
   });
 
   assert(response.ok, "Response should be successful");
@@ -111,13 +111,11 @@ async function testJsonObject() {
   assert(
     typeof result.data.address === "object",
     "Address should be extracted as an object"
-  )
-  assert(
-    result.data.address.street === "123 Innovation Way",
   );
+  assert(result.data.address.street === "123 Innovation Way");
   assert(
     Array.isArray(result.data.engineeringTeams) &&
-    result.data.engineeringTeams.length === 3,
+      result.data.engineeringTeams.length === 3,
     "Engineering teams should be extracted as an array of length 3"
   );
 }
@@ -170,7 +168,7 @@ async function testBase64JsonObject() {
             country: { type: "string" },
             zipcode: { type: "string" },
             suite: { type: "string" },
-          }
+          },
         },
         engineeringTeams: { type: "array" },
         departments: {
@@ -180,7 +178,7 @@ async function testBase64JsonObject() {
             properties: {
               name: { type: "string" },
               employees: { type: "number" },
-            }
+            },
           },
         },
       },
@@ -197,7 +195,7 @@ async function testBase64JsonObject() {
         "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
       },
       body: JSON.stringify(testData),
     }
@@ -206,7 +204,7 @@ async function testBase64JsonObject() {
   const result = await response.json();
   console.log("Result", {
     result,
-    status: response.status
+    status: response.status,
   });
 
   assert(response.ok, "Response should be successful");
@@ -222,22 +220,21 @@ async function testBase64JsonObject() {
   assert(
     typeof result.data.address === "object",
     "Address should be extracted as an object"
-  )
-  assert(
-    result.data.address.street === "123 Innovation Way",
   );
+  assert(result.data.address.street === "123 Innovation Way");
   assert(
     Array.isArray(result.data.engineeringTeams) &&
-    result.data.engineeringTeams.length === 3,
+      result.data.engineeringTeams.length === 3,
     "Engineering teams should be extracted as an array of length 3"
   );
 }
 
 async function testImage() {
-  const url = "https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png";
+  const url =
+    "https://upload.wikimedia.org/wikipedia/en/4/4d/Shrek_%28character%29.png";
 
   // Base64 encode
-  const buffer =  await fetch(url).then((response) => response.arrayBuffer());
+  const buffer = await fetch(url).then((response) => response.arrayBuffer());
   const input = Buffer.from(buffer).toString("base64");
 
   const testData = {
@@ -259,7 +256,7 @@ async function testImage() {
         "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
       },
       body: JSON.stringify(testData),
     }
@@ -268,7 +265,7 @@ async function testImage() {
   const result = await response.json();
   console.log("Result", {
     result,
-    status: response.status
+    status: response.status,
   });
 
   assert(response.ok, "Response should be successful");
@@ -280,10 +277,11 @@ async function testImage() {
 }
 
 async function testInvalidInputType() {
-  const url = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+  const url =
+    "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
   // Base64 encode
-  const buffer =  await fetch(url).then((response) => response.arrayBuffer());
+  const buffer = await fetch(url).then((response) => response.arrayBuffer());
   const input = Buffer.from(buffer).toString("base64");
 
   const testData = {
@@ -305,7 +303,7 @@ async function testInvalidInputType() {
         "x-cache-key": Math.random().toString(),
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
       },
       body: JSON.stringify(testData),
     }
@@ -314,7 +312,7 @@ async function testInvalidInputType() {
   const result = await response.json();
   console.log("Result", {
     result,
-    status: response.status
+    status: response.status,
   });
 
   assert(response.status === 400);
@@ -339,7 +337,7 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
 
   const providerMessageMap = {
     openrouter: "No auth credentials found",
-    groq: "Invalid API Key"
+    groq: "Invalid API Key",
   };
 
   const response = await fetch(
@@ -351,7 +349,7 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
         "x-cache-key": Math.random().toString(),
         "x-provider-url": providerMap[provider],
         "x-provider-model": "INVALID",
-        "x-provider-key": "INVALID"
+        "x-provider-key": "INVALID",
       },
       body: JSON.stringify(testData),
     }
@@ -360,19 +358,26 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
   const result = await response.json();
   console.log("Result", {
     result: JSON.stringify(result),
-    status: response.status
+    status: response.status,
   });
 
-  assert(response.status === 401, "Status code should be forwarded from provider");
+  assert(
+    response.status === 401,
+    "Status code should be forwarded from provider"
+  );
   assert(result.message === "Failed to call provider");
-  assert(result.providerResponse.error.message === providerMessageMap[provider], "Error message should be forwarded from provider");
+  assert(
+    result.providerResponse.error.message === providerMessageMap[provider],
+    "Error message should be forwarded from provider"
+  );
 }
 
 // Main test runner - executes all tests
-(async function runAllTests() { console.log("Starting tests...");
+(async function runAllTests() {
+  console.log("Starting tests...");
   console.log("Testing with provider", {
     url: process.env.TEST_PROVIDER_URL,
-    model: process.env.TEST_PROVIDER_MODEL
+    model: process.env.TEST_PROVIDER_MODEL,
   });
 
   //await runTest("General", testJsonObject);
