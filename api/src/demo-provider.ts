@@ -8,9 +8,9 @@ export const isDemoProvider = ({
   providerUrl: string;
 }) => {
   return (
-    providerKey === "sk_demo" &&
-    providerModel === "claude-3-5-sonnet-latest" &&
-    providerUrl === "https://api.anthropic.com/v1/messages"
+    providerKey === "demo" &&
+    providerModel === "demo" &&
+    providerUrl === "demo"
   );
 };
 
@@ -30,8 +30,7 @@ export const getDemoData = ({
   providerUrl: string;
 }) => {
   if (
-    isDemoProvider({ providerKey, providerModel, providerUrl }) &&
-    process.env.ANTHROPIC_DEMO_KEY
+    isDemoProvider({ providerKey, providerModel, providerUrl })
   ) {
     if (
       input.trim().startsWith(`/9j/4Q/`) &&
@@ -121,7 +120,7 @@ export const getDemoData = ({
     }
 
     throw new Error(
-      "Invalid input or schema. Must conform to the quick start examples."
+      "Invalid input or schema. Must conform to the quick start examples when using `demo` provider."
     );
   }
 };
