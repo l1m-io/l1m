@@ -456,6 +456,37 @@ case $SELECTED_TOOL in
 esac</code></pre>
   </details>
 
+  <details>
+    <summary>Using local models with Ollama</summary>
+    <pre><code class="language-bash">#!/bin/bash
+
+# Make sure Ollama is running locally with your desired model
+# Example: ollama run llama3
+
+# Set up ngrok to expose your local Ollama server
+# ngrok http 11434 --host-header="localhost:11434"
+
+# Replace the ngrok URL with your actual ngrok URL or use localhost
+# if you're running this on the same machine as Ollama
+curl -X POST https://api.l1m.io/structured \
+-H "Content-Type: application/json" \
+-H "X-Provider-Url: https://your-ngrok-url.ngrok-free.app/v1" \
+-H "X-Provider-Key: ollama" \
+-H "X-Provider-Model: llama3:latest" \
+-d '{
+  "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "year": {
+        "type": "number",
+        "description": "The year of the federal reserve act"
+      }
+    }
+  }
+}'</code></pre>
+  </details>
+
   <h2>Documentation</h2>
   <h3>API Headers</h3>
   <ul>
