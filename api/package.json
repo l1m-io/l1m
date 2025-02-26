@@ -26,6 +26,7 @@
     "typescript": "^5.7.3"
   },
   "scripts": {
+    "start": "tsx -r dotenv/config --watch src/server.ts",
     "dev": "tsx -r dotenv/config --watch src/server.ts",
     "test": "tsx -r dotenv/config src/test/structured.test.ts",
     "build": "npm run baml-generate && tsc --build",
