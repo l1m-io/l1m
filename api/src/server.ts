@@ -13,6 +13,7 @@ import {
 } from "@boundaryml/baml";
 import { inferMimeType } from "./base64";
 import { validateJson, validateJsonSchema } from "./schema";
+import { getDemoProvider } from "./demo-provider";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -53,12 +54,23 @@ const router = s.router(apiContract, {
   structured: async ({ body, request, headers }) => {
     const startTime = process.hrtime();
 
-    const providerKey = headers["x-provider-key"];
+    let providerKey = headers["x-provider-key"];
     const providerModel = headers["x-provider-model"];
     const providerUrl = headers["x-provider-url"];
 
     const { input } = body;
     let { schema } = body;
+
+    const demoProvider = getDemoProvider({
+      input,
+      providerKey,
+      providerModel,
+      providerUrl,
+    });
+
+    if (demoProvider) {
+      providerKey = demoProvider.providerKey;
+    }
 
     if (!validateJsonSchema(schema)) {
       return {
@@ -174,16 +186,12 @@ const router = s.router(apiContract, {
 server.setErrorHandler((error, request, reply) => {
   // Forward provider error messages / status codes
   if (error instanceof BamlClientHttpError) {
-
-    let providerResponse = parseJsonSubstring(
-      error.message,
-    )
+    let providerResponse = parseJsonSubstring(error.message);
 
     reply.status(error.status_code || 500).send({
       providerResponse,
       message: "Failed to call provider",
     });
-
   } else if (
     error instanceof BamlValidationError ||
     error instanceof BamlClientFinishReasonError
