@@ -175,13 +175,11 @@ export const structured = async ({
 };
 
 // Attempt to parse a JSON object substring from a string
-const parseJsonSubstring = (raw: string): unknown | null => {
+export const parseJsonSubstring = (raw: string): unknown | undefined => {
   const jsonMatch = raw.match(/{.*}/s); // Match JSON-like content
   if (!jsonMatch) return null;
 
   try {
     return JSON.parse(jsonMatch[0]);
-  } catch {
-    return null;
-  }
+  } catch {}
 };

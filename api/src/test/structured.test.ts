@@ -319,7 +319,7 @@ async function testInvalidInputType() {
   assert(result.message === "Provided content has invalid mime type");
 }
 
-async function testInvalidApiKey(provider: "openrouter" | "groq") {
+async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
   const testData = {
     input: "abc123",
     schema: {
@@ -333,11 +333,13 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
   const providerMap = {
     openrouter: "https://openrouter.ai/api/v1",
     groq: "https://api.groq.com/openai/v1",
+    openai: "https://api.openai.com/v1",
   };
 
   const providerMessageMap = {
     openrouter: "No auth credentials found",
     groq: "Invalid API Key",
+    openai: "Incorrect API key provided: INVALID. You can find your API key at https://platform.openai.com/account/api-keys.",
   };
 
   const response = await fetch(
@@ -423,6 +425,7 @@ async function testInvalidSchema() {
 
   await runTest("Invalid groq API Key", () => testInvalidApiKey("groq"));
   await runTest("Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
+  await runTest("Invalid OpenAI API Key", () => testInvalidApiKey("openai"));
 
   await runTest("Invalid schema", testInvalidSchema);
 
