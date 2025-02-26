@@ -1,5 +1,5 @@
 import assert from "assert";
-import L1M from "..";
+import L1M from ".";
 import { z } from "zod";
 
 async function runTest(name: string, fn: () => Promise<void>) {
@@ -75,7 +75,7 @@ async function testInvalidApiKey() {
 
 // Main test runner - executes all tests
 (async function runAllTests() { console.log("Starting tests...");
-  //await runTest("structured (zod)", testCallStructuredZod);
+  await runTest("structured (zod)", testCallStructuredZod);
   await runTest("invalid api key", testInvalidApiKey);
 
   console.log("All tests completed");

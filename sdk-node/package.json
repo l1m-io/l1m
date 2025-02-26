@@ -6,7 +6,7 @@
   "private": false,
   "scripts": {
     "build": "tsc",
-    "test": "tsx -r dotenv/config src/test/client.test.ts",
+    "test": "tsx -r dotenv/config src/index.test.ts",
     "prepublishOnly": "npm run build"
   },
   "keywords": [],

@@ -2,18 +2,6 @@ import axios, { AxiosInstance, AxiosError } from 'axios';
 import { z } from 'zod';
 import zodToJsonSchema from 'zod-to-json-schema';
 
-export class L1MError extends Error {
-  statusCode?: number;
-  body?: any;
-
-  constructor(message: string, statusCode?: number, body?: any) {
-    super(message);
-    this.name = 'L1MError';
-    this.statusCode = statusCode;
-    this.body = body;
-  }
-}
-
 type ClientOptions = {
   baseUrl?: string;
   /**
@@ -52,6 +40,22 @@ type RequestOptions = {
   cacheKey?: string
 };
 
+
+class L1MError extends Error {
+  statusCode?: number;
+  body?: any;
+
+  constructor(message: string, statusCode?: number, body?: any) {
+    super(message);
+    this.name = 'L1MError';
+    this.statusCode = statusCode;
+    this.body = body;
+  }
+}
+
+/**
+* L1M API Client
+*/
 export class L1M {
   private baseUrl: string;
   private client: AxiosInstance;
@@ -70,6 +74,10 @@ export class L1M {
     });
   }
 
+  /**
+  *
+  * Generate a structured response from the L1M API.
+  */
   async structured<T extends z.ZodObject<any>, TOutput = z.infer<T>>({ input, schema }: StructuredRequestInput<T>, options?: RequestOptions): Promise<TOutput> {
     const cacheKey = options?.cacheKey;
 
