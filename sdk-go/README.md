@@ -5,7 +5,7 @@ A Go SDK for the l1m API, enabling you to extract structured data from text and 
 ## Installation
 
 ```bash
-go get github.com/inferablehq/l1m
+go get github.com/inferablehq/l1m/tree/main/sdk-go
 ```
 
 ## Usage
@@ -14,7 +14,7 @@ go get github.com/inferablehq/l1m
 package main
 
 import (
-    "github.com/inferablehq/l1m"
+    "github.com/inferablehq/l1m/tree/main/sdk-go"
 )
 
 func main() {

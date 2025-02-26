@@ -20,7 +20,7 @@ patch-release: test
 	@echo "New version: $(NEW_VERSION)"
 	git tag -a $(NEW_VERSION) -m "Release $(NEW_VERSION)"
 	git push origin $(NEW_VERSION)
-	GOPROXY=proxy.golang.org go list -m github.com/inferablehq/l1m@$(NEW_VERSION)
+	GOPROXY=proxy.golang.org go list -m github.com/inferablehq/l1m/tree/main/sdk-go@$(NEW_VERSION)
 
 # Show help
 help:

@@ -1,4 +1,4 @@
-module github.com/inferablehq/l1m
+module github.com/inferablehq/l1m/tree/main/sdk-go
 
 go 1.21
 
