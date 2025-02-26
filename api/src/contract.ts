@@ -3,8 +3,6 @@ import { z } from "zod";
 
 const c = initContract();
 
-const hasDefaultProvider = !!process.env.DEFAULT_BEDROCK_MODEL;
-
 export const apiContract = c.router({
   home: {
     method: "GET",
@@ -43,30 +41,11 @@ export const apiContract = c.router({
       ),
     headers: z
       .object({
-        ...(hasDefaultProvider
-          ? {
-              "x-provider-model": z.string().optional(),
-              "x-provider-url": z.string().optional(),
-              "x-provider-key": z.string().optional(),
-            }
-          : {
-              "x-provider-model": z.string(),
-              "x-provider-url": z.string(),
-              "x-provider-key": z.string(),
-            }),
-        "x-cache-key": z.string().optional(),
-      })
-      // If any "x-provider" header is set, then all "x-provider" headers must be set
-      .refine(
-        (headers) =>
-          (!headers["x-provider-model"] &&
-            !headers["x-provider-url"] &&
-            !headers["x-provider-key"]) ||
-          (headers["x-provider-model"] &&
-            headers["x-provider-url"] &&
-            headers["x-provider-key"]),
-        "If any x-provider-* header is set, then all x-provider headers must be set"
-      ),
+      "x-provider-model": z.string(),
+      "x-provider-url": z.string(),
+      "x-provider-key": z.string(),
+      "x-cache-key": z.string().optional(),
+      }),
     responses: {
       200: z.object({
         data: z.record(z.any()),
