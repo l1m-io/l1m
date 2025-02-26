@@ -4,7 +4,7 @@ import fastify from "fastify";
 import { apiContract } from "./contract";
 import { initServer } from "@ts-rest/fastify";
 import { redis } from "./redis";
-import { buildClientRegistry, structured } from "./baml";
+import { buildClientRegistry, parseJsonSubstring, structured } from "./baml";
 import {
   BamlClientFinishReasonError,
   BamlClientHttpError,
@@ -169,17 +169,16 @@ const router = s.router(apiContract, {
 server.setErrorHandler((error, request, reply) => {
   // Forward provider error messages / status codes
   if (error instanceof BamlClientHttpError) {
-    // TODO: Check if this is consistent for other providers
-    let providerResponse = error.message.split("\n")[1];
 
-    try {
-      providerResponse = JSON.parse(providerResponse);
-    } catch {}
+    let providerResponse = parseJsonSubstring(
+      error.message,
+    )
 
     reply.status(error.status_code || 500).send({
       providerResponse,
       message: "Failed to call provider",
     });
+
   } else if (
     error instanceof BamlValidationError ||
     error instanceof BamlClientFinishReasonError
