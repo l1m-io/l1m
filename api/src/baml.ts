@@ -136,6 +136,54 @@ export const buildClientRegistry = (provider: {
   return clientRegistry;
 };
 
+// Recursively collect descriptions from properties within a schema in the format
+// <JSON path>: <description>
+const collectDescriptions = (
+  schema: Schema,
+  path: string = "",
+  descriptions: string = ""
+) => {
+  if (!schema) {
+    return descriptions;
+  }
+
+  if (schema.description) {
+    descriptions += `${path}: ${schema.description}\n`;
+  }
+
+  if (schema.properties) {
+    Object.keys(schema.properties).forEach((key) => {
+      const prop = schema.properties?.[key];
+
+      if (prop) {
+        descriptions = collectDescriptions(
+          prop,
+          `${path}.${key}`,
+          descriptions
+        );
+      }
+    });
+  }
+
+  if (schema.type === "array" && schema.items) {
+    let item = schema.items;
+
+    if (Array.isArray(schema.items)) {
+      item = schema.items[0];
+    }
+
+    if (item) {
+      descriptions = collectDescriptions(
+        schema.items as Schema,
+        `${path}[]`,
+        descriptions
+      );
+    }
+  }
+
+  return descriptions;
+};
+
 export const structured = async ({
   input,
   type,
