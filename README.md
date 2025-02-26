@@ -1,6 +1,10 @@
 # l1m 🚀
 
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Homepage](https://img.shields.io/badge/homepage-l1m.io-blue)](https://l1m.io)
+[![Go Reference](https://pkg.go.dev/badge/github.com/inferablehq/l1m/sdk-go.svg)](https://pkg.go.dev/github.com/inferablehq/l1m/sdk-go)
+[![npm](https://img.shields.io/npm/v/l1m)](https://www.npmjs.com/package/l1m)
+[![PyPI](https://img.shields.io/pypi/v/l1m-dot-io)](https://pypi.org/project/l1m-dot-io/)
 
 > A Proxy to extract structured data from text and images using LLMs.
 
