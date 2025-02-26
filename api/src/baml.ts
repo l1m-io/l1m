@@ -5,6 +5,19 @@ import { ClassBuilder } from "@boundaryml/baml/type_builder";
 import { ClientRegistry, Image, BamlClientHttpError } from "@boundaryml/baml";
 import { z } from "zod";
 
+const getTypeForSchema = (tb: TypeBuilder, schema: Schema) => {
+  switch (schema.type) {
+    case "string":
+      return tb.string();
+    case "number":
+      return tb.float();
+    case "boolean":
+      return tb.bool();
+    default:
+      return tb.string(); // fallback to string for unknown types
+  }
+};
+
 const addJsonProperty = ({
   tb,
   cb,
