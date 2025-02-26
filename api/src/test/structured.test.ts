@@ -380,14 +380,14 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
     model: process.env.TEST_PROVIDER_MODEL,
   });
 
-  //await runTest("General", testJsonObject);
+  await runTest("General", testJsonObject);
   await runTest("General (base64)", testBase64JsonObject);
 
-  // await runTest("Image", testImage);
-  // await runTest("Invalid type", testInvalidInputType);
-  //
-  // await runTest("Provider: Invalid groq API Key", () => testInvalidApiKey("groq"));
-  // await runTest("Provider: Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
+  await runTest("Image", testImage);
+  await runTest("Invalid type", testInvalidInputType);
+
+  await runTest("Provider: Invalid groq API Key", () => testInvalidApiKey("groq"));
+  await runTest("Provider: Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
 
   console.log("All tests completed");
 })().catch(console.error);
