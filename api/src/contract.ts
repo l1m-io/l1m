@@ -27,18 +27,16 @@ export const apiContract = c.router({
   structured: {
     method: "POST",
     path: "/structured",
-    body: z
-      .object({
-        input: z.string(),
-        schema: z.record(z.any()),
-      }),
-    headers: z
-      .object({
+    body: z.object({
+      input: z.string(),
+      schema: z.record(z.any()),
+    }),
+    headers: z.object({
       "x-provider-model": z.string(),
       "x-provider-url": z.string(),
       "x-provider-key": z.string(),
       "x-cache-key": z.string().optional(),
-      }),
+    }),
     responses: {
       200: z.object({
         data: z.record(z.any()),
