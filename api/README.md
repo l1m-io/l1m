@@ -33,57 +33,57 @@ Base64 encoded image data can be in one of the following formats:
 **Example Request (raw text):**
 
 ```bash
-curl -X POST http://localhost:3000/structured \
-    -H "Content-Type: application/json" \
-    -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
-    -H "X-Provider-Key: sk_demo" \
-    -H "X-Provider-Model: claude-3-5-sonnet-latest" \
-    -d '{
-        "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "events": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "year": { "type": "number" },
-                            "event": { "type": "string" }
-                        }
-                    }
-                }
-            }
+curl -X POST https://api.l1m.io/structured \
+-H "Content-Type: application/json" \
+-H "X-Provider-Url: demo" \
+-H "X-Provider-Key: demo" \
+-H "X-Provider-Model: demo" \
+-d '{
+  "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "price": { "type": "number" }
+          }
         }
-    }'
+      }
+    }
+  }
+}'
 ```
 
 **Example Request (Image via URL):**
 
 ```bash
-curl -X POST http://localhost:3000/structured \
-    -H "Content-Type: application/json" \
-    -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
-    -H "X-Provider-Key: sk_demo" \
-    -H "X-Provider-Model: claude-3-5-sonnet-latest" \
-    -d '{
-        "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
-        "schema": {
+curl -X POST https://api.l1m.io/structured \
+-H "Content-Type: application/json" \
+-H "X-Provider-Url: demo" \
+-H "X-Provider-Key: demo" \
+-H "X-Provider-Model: demo" \
+-d '{
+  "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
           "type": "object",
           "properties": {
-            "items": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "price": { "type": "number" }
-                }
-              }
-            }
+            "name": { "type": "string" },
+            "price": { "type": "number" }
           }
         }
-      }'
+      }
+    }
+  }
+}'
 ```
 
 ## Environment Variables
