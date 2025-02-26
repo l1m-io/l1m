@@ -83,7 +83,6 @@ const router = s.router(apiContract, {
     // Remove refs
     schema = dereferenceSync(schema);
 
-
     const demoData = getDemoData({
       input,
       schema: JSON.stringify(schema),
@@ -169,6 +168,8 @@ const router = s.router(apiContract, {
           status: 422,
           body: {
             message: "Failed to extract structured data",
+            schema,
+            result,
           },
         };
       }
@@ -221,6 +222,7 @@ server.setErrorHandler((error, request, reply) => {
   ) {
     reply.status(422).send({
       message: "Failed to extract structured data",
+      error: error.message,
     });
   } else {
     reply.status(error.statusCode || 500).send({
