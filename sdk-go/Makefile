@@ -1,14 +1,14 @@
 .PHONY: patch-release test
 
-# Get the current version
-CURRENT_VERSION=$(shell git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-# Parse major, minor, and patch versions
-MAJOR=$(shell echo $(CURRENT_VERSION) | cut -d. -f1)
+# Get the current version by sorting git tags and taking the last one
+CURRENT_VERSION=$(shell git --no-pager tag | sort -V | tail -n 1 || echo "v0.0.0")
+# Parse major, minor, and patch versions, stripping the 'v' prefix for calculations
+MAJOR=$(shell echo $(CURRENT_VERSION) | sed 's/v//' | cut -d. -f1)
 MINOR=$(shell echo $(CURRENT_VERSION) | cut -d. -f2)
 PATCH=$(shell echo $(CURRENT_VERSION) | cut -d. -f3)
 # Calculate new patch version
 NEW_PATCH=$(shell echo $$(($(PATCH) + 1)))
-NEW_VERSION=$(MAJOR).$(MINOR).$(NEW_PATCH)
+NEW_VERSION=v$(MAJOR).$(MINOR).$(NEW_PATCH)
 
 # Run tests before release
 test:
