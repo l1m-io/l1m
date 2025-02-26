@@ -47,7 +47,7 @@ class RequestOptions:
     """Options for a request to the L1M API."""
 
     provider: ProviderOptions
-    cache_key: Optional[str] = None
+    cache_ttl: Optional[int] = None
 
 
 T = TypeVar("T", bound=BaseModel)
@@ -92,7 +92,7 @@ class L1M:
         Raises:
             L1MError: If the request fails
         """
-        cache_key = options.cache_key if options else None
+        cache_ttl = options.cache_ttl if options else None
 
         provider = self.provider if self.provider else (options.provider if options else None)
 
@@ -108,8 +108,8 @@ class L1M:
                 "x-provider-key": provider.key,
             }
 
-            if cache_key:
-                headers["x-cache-key"] = cache_key
+            if cache_ttl:
+                headers["x-cache-ttl"] = cache_ttl
 
             response = self.session.post(
                 f"{self.base_url}/structured",

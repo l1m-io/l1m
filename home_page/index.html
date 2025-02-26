@@ -77,29 +77,50 @@
     .token.prolog,
     .token.doctype,
     .token.cdata {
-      color: #666;
+      color: #777;
       font-style: italic;
     }
 
     .token.function,
-    .token.keyword,
-    .token.operator {
-      color: #222;
-      font-weight: bold;
+    .token.keyword {
+      color: #111;
+      font-weight: 600;
     }
 
-    .token.string,
-    .token.attr-value {
+    .token.string {
       color: #444;
     }
 
-    .token.punctuation {
+    .token.number {
+      color: #222;
+      font-weight: 500;
+    }
+
+    .token.property {
       color: #555;
     }
 
-    .token.property,
-    .token.number {
-      color: #333;
+    .token.punctuation {
+      color: #666;
+    }
+
+    .token.operator {
+      color: #444;
+      font-weight: normal;
+    }
+
+    .token.constant {
+      color: #222;
+      font-weight: 500;
+    }
+
+    .token.url {
+      color: #444;
+      text-decoration: underline;
+    }
+
+    code {
+      font-size: 12px;
     }
   </style>
 </head>
@@ -122,23 +143,60 @@
       as JSON schema descriptions.</li>
     <li><strong>Provider Flexibility:</strong> Use our default provider to get started, bring your own when going to
       production.</li>
-    <li><strong>Caching:</strong> Built-in caching, with `x-cache-key` header to use l1m.io as a cache for your LLM
-      requests.</li>
+    <li><strong>Caching:</strong> Built-in caching, with `x-cache-ttl` (seconds) header to use l1m.io as a cache for
+      your LLM requests.</li>
     <li><strong>Open source:</strong> Open-source, no vendor lock-in. Or use the hosted version with free-tier and high
       availability.</li>
-    <li><strong>No data retention:</strong> We don't store your data, unless you use the `x-cache-key` header.</li>
+    <li><strong>No data retention:</strong> We don't store your data, unless you use the `x-cache-ttl` header.</li>
   </ul>
 
   <h2>Quick Start</h2>
+  <h3>Text Example</h3>
   <pre><code class="language-bash" style="font-size: 12px;">curl -X POST https://api.l1m.io/structured \
   -H "Content-Type: application/json" \
+  -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
+  -H "X-Provider-Key: sk_demo" \
+  -H "X-Provider-Model: claude-3-5-sonnet-latest" \
   -d '{
-      "raw": "John works at Acme Inc.",
+      "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
       "schema": {
           "type": "object",
           "properties": {
-              "name": { "type": "string" },
-              "company": { "type": "string" }
+              "events": {
+                  "type": "array",
+                  "items": {
+                      "type": "object",
+                      "properties": {
+                          "year": { "type": "number" },
+                          "event": { "type": "string" }
+                      }
+                  }
+              }
+          }
+      }
+  }'</code></pre>
+
+  <h3>Image Example</h3>
+  <pre><code class="language-bash" style="font-size: 12px;">curl -X POST https://api.l1m.io/structured \
+  -H "Content-Type: application/json" \
+  -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
+  -H "X-Provider-Key: sk_demo" \
+  -H "X-Provider-Model: claude-3-5-sonnet-latest" \
+  -d '{
+      "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
+      "schema": {
+          "type": "object",
+          "properties": {
+              "items": {
+                  "type": "array",
+                  "items": {
+                      "type": "object",
+                      "properties": {
+                          "name": { "type": "string" },
+                          "price": { "type": "number" }
+                      }
+                  }
+              }
           }
       }
   }'</code></pre>

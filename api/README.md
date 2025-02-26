@@ -17,7 +17,7 @@ Extracts structured data from content according to the provided schema.
 - `x-provider-model` (optional): Custom LLM model to use
 - `x-provider-url` (optional): Custom LLM provider URL (OpenAI compatiable or Anthropic API)
 - `x-provider-key` (optional): API key for custom LLM provider
-- `x-cache-key` (optional): Custom cache key
+- `x-cache-ttl` (optional): Cache TTL in seconds
 
 **Request Body:**
 

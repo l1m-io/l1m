@@ -111,22 +111,18 @@ const router = s.router(apiContract, {
       const [seconds, nanoseconds] = process.hrtime(startTime);
       const duration = seconds * 1000 + nanoseconds / 1000000;
 
-      let cacheKey: string = generateCacheKey([
-        input,
-        JSON.stringify(schema),
-        providerKey,
-        providerModel,
-      ]);
+      const ttl = headers["x-cache-ttl"] ?? 0;
 
-      if (headers["x-cache-key"]) {
-        cacheKey = generateCacheKey([
-          headers["x-cache-key"],
-          providerKey,
-          providerModel,
-        ]);
-      }
+      const cacheKey: string | null = ttl
+        ? generateCacheKey([
+            input,
+            JSON.stringify(schema),
+            providerKey,
+            providerModel,
+          ])
+        : null;
 
-      const fromCache = await redis?.get(cacheKey);
+      const fromCache = cacheKey ? await redis?.get(cacheKey) : null;
 
       let result = fromCache
         ? JSON.parse(fromCache)
@@ -150,8 +146,8 @@ const router = s.router(apiContract, {
         };
       }
 
-      if (!fromCache) {
-        await redis?.set(cacheKey, JSON.stringify(result));
+      if (!fromCache && cacheKey) {
+        await redis?.set(cacheKey, JSON.stringify(result), "EX", ttl);
       }
 
       server.log.info({
