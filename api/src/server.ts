@@ -11,6 +11,7 @@ import {
   BamlValidationError,
 } from "@boundaryml/baml";
 import { inferMimeType } from "./base64";
+import { validateJson, validateJsonSchema } from "./schema";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -56,6 +57,15 @@ const router = s.router(apiContract, {
     const providerUrl = headers["x-provider-url"];
 
     const { input, schema } = body;
+
+    if (!validateJsonSchema(schema)) {
+      return {
+        status: 400,
+        body: {
+          message: "Provided JSON schema is invalid",
+        },
+      };
+    }
 
     const type = await inferMimeType(input);
 
@@ -114,6 +124,15 @@ const router = s.router(apiContract, {
             }),
           });
 
+      if (!validateJson(schema, result)) {
+        return {
+          status: 422,
+          body: {
+            message: "Failed to extract structured data",
+          },
+        };
+      }
+
       if (!fromCache) {
         await redis?.set(cacheKey, JSON.stringify(result));
       }
@@ -165,8 +184,8 @@ server.setErrorHandler((error, request, reply) => {
     error instanceof BamlValidationError ||
     error instanceof BamlClientFinishReasonError
   ) {
-    reply.status(200).send({
-      data: null,
+    reply.status(422).send({
+      message: "Failed to extract structured data",
     });
   } else {
     reply.status(error.statusCode || 500).send({

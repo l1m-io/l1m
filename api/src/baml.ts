@@ -116,7 +116,7 @@ export const structured = async ({
 }) => {
   const tb = new TypeBuilder();
 
-  if (schema.type === "object" && schema.properties) {
+  if (schema.properties) {
     Object.keys(schema.properties).forEach((key) =>
       addJsonProperty({
         tb,
@@ -126,7 +126,7 @@ export const structured = async ({
       })
     );
   } else {
-    throw new Error("Schema must be an object");
+    throw new Error("Schema has no properties");
   }
 
   try {

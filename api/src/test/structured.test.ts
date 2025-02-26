@@ -372,6 +372,40 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
   );
 }
 
+async function testInvalidSchema() {
+  const testData = {
+    input: "abc123",
+    schema: {
+      type: "INVLAID",
+    },
+  };
+
+
+  const response = await fetch(
+    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-cache-key": Math.random().toString(),
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
+      },
+      body: JSON.stringify(testData),
+    }
+  );
+
+  const result = await response.json();
+  console.log("Result", {
+    result: JSON.stringify(result),
+    status: response.status,
+  });
+
+  assert(response.status === 400);
+  assert(result.message === "Provided JSON schema is invalid");
+}
+
 // Main test runner - executes all tests
 (async function runAllTests() {
   console.log("Starting tests...");
@@ -380,14 +414,17 @@ async function testInvalidApiKey(provider: "openrouter" | "groq") {
     model: process.env.TEST_PROVIDER_MODEL,
   });
 
+
   await runTest("General", testJsonObject);
   await runTest("General (base64)", testBase64JsonObject);
 
   await runTest("Image", testImage);
   await runTest("Invalid type", testInvalidInputType);
 
-  await runTest("Provider: Invalid groq API Key", () => testInvalidApiKey("groq"));
-  await runTest("Provider: Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
+  await runTest("Invalid groq API Key", () => testInvalidApiKey("groq"));
+  await runTest("Invalid openRouter API Key", () => testInvalidApiKey("openrouter"));
+
+  await runTest("Invalid schema", testInvalidSchema);
 
   console.log("All tests completed");
 })().catch(console.error);
