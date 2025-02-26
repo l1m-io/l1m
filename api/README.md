@@ -34,40 +34,56 @@ Base64 encoded image data can be in one of the following formats:
 
 ```bash
 curl -X POST http://localhost:3000/structured \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": "John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "company": { "type": "string" },
-        "contactInfo": {
-          "type": "object",
-          "properties": {
-            "email": { "type": "string" },
-            "phone": { "type": "string" }
-          }
+    -H "Content-Type: application/json" \
+    -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
+    -H "X-Provider-Key: sk_demo" \
+    -H "X-Provider-Model: claude-3-5-sonnet-latest" \
+    -d '{
+        "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "year": { "type": "number" },
+                            "event": { "type": "string" }
+                        }
+                    }
+                }
+            }
         }
-      }
-    }
-  }'
+    }'
 ```
 
 **Example Request (Image via URL):**
 
 ```bash
 curl -X POST http://localhost:3000/structured \
-  -H "Content-Type: application/json" \
-  -d '{
-    "input": "<BASE64_ENCODED_IMAGE_DATA>",
-    "schema": {
-      "type": "object",
-      "properties": {
-        "character": { "type": "string" }
-      }
-    }
-  }'
+    -H "Content-Type: application/json" \
+    -H "X-Provider-Url: https://api.anthropic.com/v1/messages" \
+    -H "X-Provider-Key: sk_demo" \
+    -H "X-Provider-Model: claude-3-5-sonnet-latest" \
+    -d '{
+        "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "price": { "type": "number" }
+                }
+              }
+            }
+          }
+        }
+      }'
 ```
 
 ## Environment Variables
