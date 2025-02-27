@@ -1,7 +1,7 @@
-import { minimalSchema } from './schema';
+import { minimalSchema } from "./schema";
 
-describe('schema', () => {
-  test('should convert simple enum schema correctly', () => {
+describe("schema", () => {
+  test("should convert simple enum schema correctly", () => {
     // Example 1: Simple schema with enums
     const schema1 = {
       type: "object",
@@ -9,21 +9,22 @@ describe('schema', () => {
         skyColor: {
           type: "string",
           enum: ["lightBlue", "gray", "black"],
-          description: "The color of the sky"
+          description: "The color of the sky",
         },
         grassColor: {
           type: "string",
           enum: ["green", "brown", "yellow"],
-          description: "The color of grass"
+          description: "The color of grass",
         },
       },
     };
 
-    const expected1 = "{ skyColor: 'lightBlue' | 'gray' | 'black', grassColor: 'green' | 'brown' | 'yellow' }";
+    const expected1 =
+      "{ skyColor: 'lightBlue' | 'gray' | 'black', grassColor: 'green' | 'brown' | 'yellow' }";
     expect(minimalSchema(schema1)).toBe(expected1);
   });
 
-  test('should convert complex nested schema correctly', () => {
+  test("should convert complex nested schema correctly", () => {
     const schema2 = {
       type: "object",
       properties: {
@@ -63,70 +64,71 @@ describe('schema', () => {
       },
     };
 
-    const expected2 = "{ companyName: string, foundedYear: float, address: { street: string, city: string, state: string, country: string, zipcode: string, suite: string }, engineeringTeams: string[], departments: [ { name: string, employees: float } ] }";
+    const expected2 =
+      "{ companyName: string, foundedYear: float, address: { street: string, city: string, state: string, country: string, zipcode: string, suite: string }, engineeringTeams: string[], departments: [ { name: string, employees: float } ] }";
     expect(minimalSchema(schema2)).toBe(expected2);
   });
 
-  test('should handle mixed numeric and string enums', () => {
+  test("should handle mixed numeric and string enums", () => {
     const schema = {
       type: "object",
       properties: {
         status: {
           type: "number",
           enum: [0, 1, 2],
-          description: "Status code"
+          description: "Status code",
         },
         mode: {
           type: "string",
           enum: ["auto", "manual"],
-        }
-      }
+        },
+      },
     };
 
     const expected = "{ status: 0 | 1 | 2, mode: 'auto' | 'manual' }";
     expect(minimalSchema(schema)).toBe(expected);
   });
 
-  test('should handle array with primitive items', () => {
+  test("should handle array with primitive items", () => {
     const schema = {
       type: "object",
       properties: {
         tags: {
           type: "array",
           items: {
-            type: "string"
-          }
-        }
-      }
+            type: "string",
+          },
+        },
+      },
     };
 
     const expected = "{ tags: string[] }";
     expect(minimalSchema(schema)).toBe(expected);
   });
 
-  test('should handle empty objects', () => {
+  test("should handle empty objects", () => {
     const schema = {
       type: "object",
       properties: {
         metadata: {
-          type: "object"
-        }
-      }
+          type: "object",
+        },
+      },
     };
 
     const expected = "{ metadata: {} }";
     expect(minimalSchema(schema)).toBe(expected);
   });
 
-  test('should handle boolean types', () => {
+  test("should handle boolean types", () => {
     const schema = {
       type: "object",
       properties: {
         isActive: {
           type: "boolean",
-          description: "Whether the account is active"
-        }
-      }
+          description: "Whether the account is active",
+        },
+      },
     };
 
     const expected = "{ isActive: boolean }";

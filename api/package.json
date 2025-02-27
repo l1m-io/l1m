@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@anthropic-ai/sdk": "^0.36.3",
+    "@google/generative-ai": "^0.22.0",
     "@ts-rest/fastify": "^3.52.0",
     "@types/ioredis": "^4.28.10",
     "@upstash/redis": "^1.34.4",
@@ -37,6 +38,7 @@
     "start": "tsx src/server.ts",
     "dev": "tsx -r dotenv/config --watch src/server.ts",
     "test": "jest --config=jest.config.js",
+    "test:unit": "jest --config=jest.config.js --testPathPattern='^(?!.*integration).*\\.test\\.ts$'",
     "test:integration": "jest --config=jest.config.js src/test/structured.integration.test.ts --detectOpenHandles",
     "build": "tsc --build",
     "watch": "tsc -w",

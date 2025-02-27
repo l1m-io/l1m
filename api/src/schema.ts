@@ -5,8 +5,19 @@ import { Schema } from "jsonschema";
 const ajv = new Ajv();
 
 // Check that the schema matches our minimal implementation
-export const illegalSchemaCheck = (schema: Record<string, any>): string | undefined => {
-  const disallowedKeys = ["minLength", "minimum", "maxLength", "maximum", "oneOf", "anyOf", "allOf", "pattern"];
+export const illegalSchemaCheck = (
+  schema: Record<string, any>
+): string | undefined => {
+  const disallowedKeys = [
+    "minLength",
+    "minimum",
+    "maxLength",
+    "maximum",
+    "oneOf",
+    "anyOf",
+    "allOf",
+    "pattern",
+  ];
 
   for (const key in schema) {
     if (disallowedKeys.includes(key)) {
@@ -15,13 +26,13 @@ export const illegalSchemaCheck = (schema: Record<string, any>): string | undefi
 
     if (key === "properties" && typeof schema[key] === "object") {
       for (const prop of Object.values(schema[key])) {
-        const error = illegalSchemaCheck(prop as Record<string, any>)
+        const error = illegalSchemaCheck(prop as Record<string, any>);
         if (error) return error;
       }
     }
 
     if (key === "items" && typeof schema[key] === "object") {
-      const error = illegalSchemaCheck(schema[key])
+      const error = illegalSchemaCheck(schema[key]);
       if (error) return error;
     }
   }
@@ -29,53 +40,54 @@ export const illegalSchemaCheck = (schema: Record<string, any>): string | undefi
 
 // Build a minimal representation of the JSON schema for use in prompt
 export const minimalSchema = (schema: Schema): string => {
-  if (!schema) return '';
+  if (!schema) return "";
 
   if (schema.enum && Array.isArray(schema.enum)) {
-    return schema.enum.map(value =>
-      typeof value === 'string' ? `'${value}'` : value
-    ).join(' | ');
+    return schema.enum
+      .map((value) => (typeof value === "string" ? `'${value}'` : value))
+      .join(" | ");
   }
 
   switch (schema.type) {
-    case 'string':
-      return 'string';
-    case 'number':
-    case 'integer':
-      return 'float';
-    case 'boolean':
-      return 'boolean';
-    case 'array':
+    case "string":
+      return "string";
+    case "number":
+    case "integer":
+      return "float";
+    case "boolean":
+      return "boolean";
+    case "array":
       if (schema.items) {
-        const item = Array.isArray(schema.items) ? schema.items[0] : schema.items;
+        const item = Array.isArray(schema.items)
+          ? schema.items[0]
+          : schema.items;
         const itemsType = minimalSchema(item);
 
-        if (item.type === 'object' && item.properties) {
+        if (item.type === "object" && item.properties) {
           return `[ ${itemsType} ]`;
         }
 
         return `${itemsType}[]`;
       }
-      return 'string[]';
-    case 'object':
-      if (!schema.properties) return '{}';
+      return "string[]";
+    case "object":
+      if (!schema.properties) return "{}";
 
       const properties = Object.entries(schema.properties)
         .map(([key, propSchema]) => {
           const propValue = minimalSchema(propSchema as JSONSchema);
           return `${key}: ${propValue}`;
         })
-        .join(', ');
+        .join(", ");
 
       return `{ ${properties} }`;
     default:
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         throw new Error(`Unsupported schema type: ${schema.type}`);
       }
-      return 'any';
+      return "any";
   }
-}
-
+};
 
 // Recursively collect descriptions from properties within a schema in the format
 // <JSON path>: <description>
@@ -124,7 +136,6 @@ export const collectDescriptions = (
 
   return descriptions;
 };
-
 
 export const validateJsonSchema = (schema: object): boolean => {
   try {

@@ -1,9 +1,9 @@
 // jest.setup.js
-const fetchMock = require('jest-fetch-mock');
+const fetchMock = require("jest-fetch-mock");
 fetchMock.enableMocks();
 
 // Make sure we can load environment variables
-require('dotenv').config();
+require("dotenv").config();
 
 // Setup global fetch mock but keep real fetch available
 global.realFetch = global.fetch;
