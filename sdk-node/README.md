@@ -16,7 +16,7 @@ import { z } from 'zod';
 
 
 const l1m = new L1M({
-  baseUrl: "http://localhost:3000",
+  baseUrl: "http://localhost:10337",
   provider: {
     model: "claude-3-opus-20240229",
     url: "https://api.anthropic.com/v1/messages",

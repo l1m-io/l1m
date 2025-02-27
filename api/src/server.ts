@@ -238,7 +238,7 @@ server.register(s.plugin(router));
 const start = async () => {
   try {
     await server.listen({
-      port: 3000,
+      port: 10337,
       host: "0.0.0.0",
     });
     server.log.info("Server started");

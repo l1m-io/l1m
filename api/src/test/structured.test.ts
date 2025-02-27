@@ -86,7 +86,7 @@ async function testJsonObject() {
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
@@ -193,7 +193,7 @@ async function testBase64JsonObject() {
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
@@ -247,7 +247,7 @@ async function testJsonDescriptions() {
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
@@ -293,7 +293,7 @@ async function testImage() {
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
@@ -339,7 +339,7 @@ async function testInvalidInputType() {
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
@@ -387,7 +387,7 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
@@ -426,7 +426,7 @@ async function testInvalidSchema() {
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
@@ -460,13 +460,13 @@ async function testNonCompliantSchema() {
           type: "string",
           minLength: 5,
           maxLength: 10,
-        }
-      }
+        },
+      },
     },
   };
 
   const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
       method: "POST",
       headers: {
