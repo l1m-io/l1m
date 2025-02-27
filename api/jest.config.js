@@ -4,9 +4,23 @@ module.exports = {
   testEnvironment: 'node',
   // Define test patterns
   testMatch: [
-    // Unit tests
-    "**/*.test.ts",
-    // Do not include integration tests when running regular tests
-    "!**/*.integration.test.ts"
+    // All tests including unit and integration
+    "**/*.test.ts"
   ],
+  // Setup for fetch-mock
+  setupFiles: [
+    "./jest.setup.js"
+  ],
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.json',
+      },
+    ],
+  },
+  // Automatically clear mock calls and instances between every test
+  clearMocks: true,
+  // Allow for dotenv loading in tests
+  setupFilesAfterEnv: ['dotenv/config'],
 };

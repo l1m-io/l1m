@@ -211,9 +211,12 @@ server.setErrorHandler((error, _, reply) => {
       message: "Failed to call provider",
       providerMessage: error.message
     })
+    return;
   }
 
-  throw error
+  reply.status(500).send({
+    message: error.message || "Internal server error",
+  });
 });
 
 // Register the routes

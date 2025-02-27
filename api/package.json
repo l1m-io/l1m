@@ -24,6 +24,7 @@
     "@types/node": "^20.11.24",
     "dotenv": "^16.4.7",
     "jest": "^29.7.0",
+    "jest-fetch-mock": "^3.0.3",
     "prettier": "^3.2.5",
     "ts-jest": "^29.2.6",
     "typescript": "^5.7.3"
@@ -35,8 +36,8 @@
   "scripts": {
     "start": "tsx src/server.ts",
     "dev": "tsx -r dotenv/config --watch src/server.ts",
-    "test:unit": "jest --config=jest.config.js",
-    "test:integration": "tsx -r dotenv/config src/test/structured.integration.ts",
+    "test": "jest --config=jest.config.js",
+    "test:integration": "jest --config=jest.config.js src/test/structured.integration.test.ts --detectOpenHandles",
     "build": "tsc --build",
     "watch": "tsc -w",
     "format": "prettier --write \"**/*.{ts,js,json,md,html,css}\"",
