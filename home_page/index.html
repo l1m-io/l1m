@@ -351,7 +351,10 @@ done
   </details>
 
   <details>
-    <summary>Tool call example in bash</summary>
+    <summary>Tool calling / Routing</summary>
+    <p>
+      While l1m does not support "tool calling" in the same sense as other model providers, you can achieve similar results using the <code>enum</code> property.
+    </p>
     <pre><code class="language-bash">INPUT="Please find the user john.doe@example.com and get their details"
 
 # First call to determine which tool to use
@@ -362,13 +365,13 @@ TOOL_RESPONSE=$(curl -X POST https://api.l1m.io/structured \
 -H "X-Provider-Model: $PROVIDER_MODEL" \
 -d '{
   "input": "$INPUT",
+  "instruction": "Select the most appropriate tool based on the input",
   "schema": {
     "type": "object",
     "properties": {
       "selected_tool": {
         "type": "string",
-        "enum": ["getUserByEmail", "getUserByName", "getUserById"],
-        "description": "Select the most appropriate tool based on the input"
+        "enum": ["getUserByEmail", "getUserByName", "getUserById"]
       }
     }
   }
@@ -380,7 +383,7 @@ SELECTED_TOOL=$(echo $TOOL_RESPONSE | jq -r '.selected_tool')
 # Switch case to handle different tool types and extract appropriate arguments
 case $SELECTED_TOOL in
   "getUserByEmail")
-    # Extract email argument
+    # Make a follow up call to extract additional argument
     ARGS=$(curl -X POST https://api.l1m.io/structured \
     -H "Content-Type: application/json" \
     -H "X-Provider-Url: $PROVIDER_URL" \
@@ -402,53 +405,11 @@ case $SELECTED_TOOL in
     EMAIL=$(echo $ARGS | jq -r '.email')
     echo "Calling getUserByEmail with email: $EMAIL"
     ;;
-    
+
   "getUserByName")
-    # Extract name argument
-    ARGS=$(curl -X POST https://api.l1m.io/structured \
-    -H "Content-Type: application/json" \
-    -H "X-Provider-Url: $PROVIDER_URL" \
-    -H "X-Provider-Key: $PROVIDER_KEY" \
-    -H "X-Provider-Model: $PROVIDER_MODEL" \
-    -d '{
-      "input": "$INPUT",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "description": "Extract the full name to use as argument"
-          }
-        }
-      }
-    }')
-    NAME=$(echo $ARGS | jq -r '.name')
-    echo "Calling getUserByName with name: $NAME"
-    ;;
-    
+    # ...
   "getUserById")
-    # Extract ID argument
-    ARGS=$(curl -X POST https://api.l1m.io/structured \
-    -H "Content-Type: application/json" \
-    -H "X-Provider-Url: $PROVIDER_URL" \
-    -H "X-Provider-Key: $PROVIDER_KEY" \
-    -H "X-Provider-Model: $PROVIDER_MODEL" \
-    -d '{
-      "input": "$INPUT",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Extract the user ID to use as argument"
-          }
-        }
-      }
-    }')
-    ID=$(echo $ARGS | jq -r '.id')
-    echo "Calling getUserById with ID: $ID"
-    ;;
-    
+    # ...
   *)
     echo "Error: Unknown tool selected: $SELECTED_TOOL"
     exit 1
@@ -488,15 +449,15 @@ curl -X POST https://api.l1m.io/structured \
   </details>
 
   <h2>Documentation</h2>
-  <h3>API Headers</h3>
+  <h3>API</h3>
+  <h4>Headers</h4>
   <ul>
-    <li><code>x-provider-model</code> (optional): Custom LLM model to use</li>
+    <li><code>x-provider-model</code> (optional): LLM model to use</li>
     <li>
-      <code>x-provider-url</code> (optional): Custom LLM provider URL (OpenAI
-      compatible or Anthropic API)
+      <code>x-provider-url</code> (optional): LLM provider URL (See supported providers below)
     </li>
     <li>
-      <code>x-provider-key</code> (optional): API key for custom LLM provider
+      <code>x-provider-key</code> (optional): API key for LLM provider
     </li>
     <li><code>x-cache-ttl</code> (optional): Cache TTL in seconds.</li>
     <ul>
@@ -504,7 +465,53 @@ curl -X POST https://api.l1m.io/structured \
         Cache key (generated) = hash(input + schema + x-provider-key +
         x-provider-model).
       </li>
+      <li>
+        Cached responses will include the `x-cache: HIT` header.
+      </li>
     </ul>
+  </ul>
+  <h4>Body</h4>
+  <ul>
+    <li>
+      <code>input</code> String or base64 image data.
+    </li>
+    <li>
+      <code>schema</code> A JSON Schema-<strong>like</strong> object describing the desired output object.
+      <ul>
+        <li>
+          The supported schema is a subset of JSON schema.
+        </li>
+        <li>
+          The top level schema type must be an <code>object</code>.
+        </li>
+        <li>
+          <code>array</code> and <code>enum</code> are supported forf nested properties.
+        </li>
+        <li>
+          `min/maxLength`, `one/any/allOf` are <strong>not supported</strong>.
+        </li>
+      </ul>
+    </li>
+    <li>
+      <code>instruction</code> Optional instruction to include in the request to the model.
+    </li>
+    </ul>
+  </ul>
+
+  <h3>Response and Error handling</h3>
+  <ul>
+    <li>
+      A success response will be a JSON object with a single property <code>data</code>.
+    </li>
+    <li>
+      If the status code is 200 the result will match the provided schema.
+    </li>
+    <li>
+      Failure to produce an object matching the schema will result in a 422 status code and error message.
+    </li>
+    <li>
+      Failures from the model provider will be returned along with the status code.
+    </li>
   </ul>
 
   <h3>Supported Data Types</h3>
