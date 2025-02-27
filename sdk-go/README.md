@@ -1,6 +1,8 @@
 # l1m Go SDK
 
-A Go SDK for the l1m API, enabling you to extract structured data from text and images using LLMs.
+Go SDK for the [l1m API](https://l1m.io), enabling you to extract structured, typed data from text and images using LLMs.
+
+By default, the [managed l1m](https://l1m.io) service is used, [self-hosting details are available here](https://github.com/inferablehq/l1m/blob/main/local.md).
 
 ## Installation
 
@@ -20,7 +22,7 @@ import (
 func main() {
     // Initialize client
     client := l1m.NewClient(&l1m.ClientOptions{
-        BaseURL: "https://api.l1m.io",
+        //BaseURL: "http://localhost:10337", Optional if self-hosting l1m server
         Provider: &l1m.Provider{
             Model: "claude-3-5-sonnet-latest",
             URL:   "https://api.anthropic.com/v1/messages",

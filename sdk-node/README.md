@@ -1,6 +1,8 @@
 # l1m Node SDK
 
-A simple Node.js SDK for the l1m API, enabling you to extract structured, typed data from text and images using LLMs.
+Node.js SDK for the [l1m API](https://l1m.io), enabling you to extract structured, typed data from text and images using LLMs.
+
+By default, the [managed l1m](https://l1m.io) service is used, [self-hosting details are available here](https://github.com/inferablehq/l1m/blob/main/local.md).
 
 ## Installation
 
@@ -16,7 +18,7 @@ import { z } from 'zod';
 
 
 const l1m = new L1M({
-  baseUrl: "http://localhost:10337",
+  //baseUrl: "http://localhost:10337", Optional if self-hosting l1m server
   provider: {
     model: "claude-3-opus-20240229",
     url: "https://api.anthropic.com/v1/messages",
