@@ -15,6 +15,34 @@ assert(process.env.TEST_PROVIDER_MODEL, "TEST_PROVIDER_MODEL must be set");
 assert(process.env.TEST_PROVIDER_URL, "TEST_PROVIDER_URL must be set");
 assert(process.env.TEST_PROVIDER_KEY, "TEST_PROVIDER_KEY must be set");
 
+async function structured(input: string, schema: object, customHeaders: Record<string, string> = {}) {
+  const response = await fetch(
+    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
+        ...customHeaders,
+      },
+      body: JSON.stringify({
+        input,
+        schema,
+      }),
+    }
+  );
+
+  const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status,
+  });
+
+  return { response, result };
+}
+
 async function testJsonObject() {
   const testData = {
     input: `{
@@ -85,25 +113,7 @@ async function testJsonObject() {
     },
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result,
-    status: response.status,
-  });
+  const { response, result } = await structured(testData.input, testData.schema);
 
   assert(response.ok, "Response should be successful");
 
@@ -159,58 +169,37 @@ async function testBase64JsonObject() {
 
   const input = Buffer.from(rawInput).toString("base64");
 
-  const testData = {
-    input,
-    schema: {
-      type: "object",
-      properties: {
-        companyName: { type: "string" },
-        foundedYear: { type: "number" },
-        address: {
+  const schema = {
+    type: "object",
+    properties: {
+      companyName: { type: "string" },
+      foundedYear: { type: "number" },
+      address: {
+        type: "object",
+        properties: {
+          street: { type: "string" },
+          city: { type: "string" },
+          state: { type: "string" },
+          country: { type: "string" },
+          zipcode: { type: "string" },
+          suite: { type: "string" },
+        },
+      },
+      engineeringTeams: { type: "array" },
+      departments: {
+        type: "array",
+        items: {
           type: "object",
           properties: {
-            street: { type: "string" },
-            city: { type: "string" },
-            state: { type: "string" },
-            country: { type: "string" },
-            zipcode: { type: "string" },
-            suite: { type: "string" },
-          },
-        },
-        engineeringTeams: { type: "array" },
-        departments: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              name: { type: "string" },
-              employees: { type: "number" },
-            },
+            name: { type: "string" },
+            employees: { type: "number" },
           },
         },
       },
     },
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result,
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema);
 
   assert(response.ok, "Response should be successful");
 
@@ -235,36 +224,16 @@ async function testBase64JsonObject() {
 }
 
 async function testJsonDescriptions() {
-  const testData = {
-    // Intentionally empty
-    input: "",
-    schema: {
-      type: "object",
-      properties: {
-        word: { type: "string", description: "Must be the word 'inference'" },
-      },
+  // Intentionally empty
+  const input = "";
+  const schema = {
+    type: "object",
+    properties: {
+      word: { type: "string", description: "Must be the word 'inference'" },
     },
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result,
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema);
 
   assert(response.ok, "Response should be successful");
 
@@ -282,35 +251,14 @@ async function testImage() {
   const buffer = await fetch(url).then((response) => response.arrayBuffer());
   const input = Buffer.from(buffer).toString("base64");
 
-  const testData = {
-    input,
-    schema: {
-      type: "object",
-      properties: {
-        character: { type: "string" },
-      },
+  const schema = {
+    type: "object",
+    properties: {
+      character: { type: "string" },
     },
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result,
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema);
 
   assert(response.ok, "Response should be successful");
 
@@ -328,48 +276,25 @@ async function testInvalidInputType() {
   const buffer = await fetch(url).then((response) => response.arrayBuffer());
   const input = Buffer.from(buffer).toString("base64");
 
-  const testData = {
-    input,
-    schema: {
-      type: "object",
-      properties: {
-        character: { type: "string" },
-      },
+  const schema = {
+    type: "object",
+    properties: {
+      character: { type: "string" },
     },
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result,
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema);
 
   assert(response.status === 400);
   assert(result.message === "Provided content has invalid mime type");
 }
 
 async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
-  const testData = {
-    input: "abc123",
-    schema: {
-      type: "object",
-      properties: {
-        character: { type: "string" },
-      },
+  const input = "abc123";
+  const schema = {
+    type: "object",
+    properties: {
+      character: { type: "string" },
     },
   };
 
@@ -386,25 +311,13 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
       "Incorrect API key provided: INVALID. You can find your API key at https://platform.openai.com/account/api-keys.",
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": providerMap[provider],
-        "x-provider-model": "INVALID",
-        "x-provider-key": "INVALID",
-      },
-      body: JSON.stringify(testData),
-    }
-  );
+  const customHeaders = {
+    "x-provider-url": providerMap[provider],
+    "x-provider-model": "INVALID",
+    "x-provider-key": "INVALID",
+  };
 
-  const result = await response.json();
-  console.log("Result", {
-    result: JSON.stringify(result),
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema, customHeaders);
 
   assert(
     response.status === 401,
@@ -418,32 +331,12 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
 }
 
 async function testInvalidSchema() {
-  const testData = {
-    input: "abc123",
-    schema: {
-      type: "INVLAID",
-    },
+  const input = "abc123";
+  const schema = {
+    type: "INVLAID",
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result: JSON.stringify(result),
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema);
 
   assert(response.status === 400);
   assert(result.message === "Provided JSON schema is invalid");
@@ -451,84 +344,44 @@ async function testInvalidSchema() {
 
 // We don't support min, max, or oneOf
 async function testNonCompliantSchema() {
-  const testData = {
-    input: "abc123",
-    schema: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          minLength: 5,
-          maxLength: 10,
-        },
-      },
-    },
+  const input = "abc123";
+  const schema = {
+    type: "object",
+    properties: {
+      name: {
+        type: "string",
+        minLength: 5,
+        maxLength: 10,
+      }
+    }
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:10337/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result: JSON.stringify(result),
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema);
 
   assert(response.status === 400);
   assert(result.message === "Disallowed property 'minLength' found in schema");
 }
 
 async function testEnumSchema() {
-  const testData = {
-    input: "Fill in the most appropriate details.",
-    schema: {
-      type: "object",
-      properties: {
-        skyColor: {
-          type: "string",
-          // Use ligthBlue rather than blue to ensure the model sees the enum
-          enum: ["lightBlue", "gray", "black"],
-          description: "The color of the sky"
-        },
-        grassColor: {
-          type: "string",
-          enum: ["green", "brown", "yellow"],
-          description: "The color of grass"
-        },
+  const input = "Fill in the most appropriate details.";
+  const schema = {
+    type: "object",
+    properties: {
+      skyColor: {
+        type: "string",
+        // Use ligthBlue rather than blue to ensure the model sees the enum
+        enum: ["lightBlue", "gray", "black"],
+        description: "The color of the sky"
+      },
+      grassColor: {
+        type: "string",
+        enum: ["green", "brown", "yellow"],
+        description: "The color of grass"
       },
     },
   };
 
-  const response = await fetch(
-    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-provider-url": process.env.TEST_PROVIDER_URL!,
-        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
-        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-      },
-      body: JSON.stringify(testData),
-    }
-  );
-
-  const result = await response.json();
-  console.log("Result", {
-    result,
-    status: response.status,
-  });
+  const { response, result } = await structured(input, schema);
 
   assert(response.ok, "Response should be successful");
   assert(
@@ -541,6 +394,48 @@ async function testEnumSchema() {
   );
 }
 
+async function testCaching() {
+  const input = `The Sky is blue. The current time is ${Date.now()}.`;
+  const schema = {
+    type: "object",
+    properties: {
+      skyColor: {
+        type: "string",
+      },
+    },
+  };
+
+  const customHeaders = {
+    "x-cache-ttl": "100",
+  };
+
+  const { response, result } = await structured(input, schema, customHeaders);
+
+  console.log("Response headers", response.headers);
+
+  assert(response.ok, "Response should be successful");
+  assert(
+    result.data.skyColor === "blue",
+    "Sky color should be extracted correctly"
+  );
+
+  assert(response.headers.has("x-cache"));
+  assert(response.headers.get("x-cache") === "MISS");
+
+  const { response: secondResponse, result: secondResult } = await structured(input, schema, customHeaders);
+
+  console.log("Second response headers", secondResponse.headers);
+
+  assert(secondResponse.ok, "Cached response should be successful");
+  assert(
+    secondResult.data.skyColor === "blue",
+    "Cached Sky color should be extracted correctly"
+  );
+
+  assert(secondResponse.headers.has("x-cache"));
+  assert(secondResponse.headers.get("x-cache") === "HIT");
+}
+
 // Main test runner - executes all tests
 (async function runAllTests() {
   console.log("Starting tests...");
@@ -549,8 +444,11 @@ async function testEnumSchema() {
     model: process.env.TEST_PROVIDER_MODEL,
   });
 
+
   await runTest("General", testJsonObject);
   await runTest("General (base64)", testBase64JsonObject);
+
+  await runTest("Caching", testCaching);
 
   await runTest("Test Enum Schema", testEnumSchema);
 
