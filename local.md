@@ -57,12 +57,13 @@ Download and install [Ollama](https://ollama.com/download) on your machine.
 
 Make sure Ollama is running. By default, Ollama serves its API at `http://localhost:11434/v1`.
 
-### 2. Pull Your Desired Model
+### 2. Pull and Run Your Desired Model
 
 If you haven't already, pull the model you want to use:
 
 ```bash
 ollama pull llama3
+ollama run llama3
 ```
 
 ### 3. Make API Requests to Ollama
