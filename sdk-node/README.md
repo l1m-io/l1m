@@ -29,7 +29,7 @@ const l1m = new L1M({
 // Extract structured data from text
 const result = await l1m.structured({
   input: "John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
-  instructions: "Extract details from the provided text", // Optional
+  instruction: "Extract details from the provided text", // Optional
   schema: z.object({
     name: z.string(),
     company: z.string(),
@@ -43,14 +43,14 @@ const result = await l1m.structured({
 // Extract structured data from an image
 const result = await l1m.structured({
   input: "<BASE64_ENCODED_IMAGE>",
-  instructions: "Extract the name of the character in the image", // Optional
+  instruction: "Extract the name of the character in the image", // Optional
   schema: z.object({
     character: z.string()
   })
 });
 
 // Cache enabled
-const result = await client.structured({
+const result = await l1m.structured({
   input: "Some text content",
   schema: z.object({ /* your schema */ })
 }, {
