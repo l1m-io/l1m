@@ -5,9 +5,17 @@ import { ClassBuilder } from "@boundaryml/baml/type_builder";
 import { ClientRegistry, Image, BamlClientHttpError } from "@boundaryml/baml";
 import { z } from "zod";
 
-const getTypeForSchema = (tb: TypeBuilder, schema: Schema) => {
+
+const getTypeForSchema = (tb: TypeBuilder, schema: Schema, key: string) => {
   switch (schema.type) {
     case "string":
+      if (schema.enum) {
+        const enumBuilder = tb.addEnum(key + "Enum");
+        schema.enum.forEach((value) => {
+          enumBuilder.addValue(value);
+        })
+        return enumBuilder.type()
+      }
       return tb.string();
     case "number":
       return tb.float();
@@ -29,16 +37,9 @@ const addJsonProperty = ({
   property: Schema;
   key: string;
 }) => {
-  if (property.type === "string") {
-    cb.addProperty(key, tb.string());
-  }
 
-  if (property.type === "number") {
-    cb.addProperty(key, tb.float());
-  }
-
-  if (property.type === "boolean") {
-    cb.addProperty(key, tb.bool());
+  if (property.type && typeof property.type === "string" && ["string", "number", "boolean"].includes(property.type)) {
+    cb.addProperty(key, getTypeForSchema(tb, property, key));
   }
 
   if (property.type === "object" && property.properties) {
@@ -58,45 +59,31 @@ const addJsonProperty = ({
 
   if (property.type === "array") {
     if (property.items) {
+      let item = property.items;
+
       if (Array.isArray(property.items)) {
         // For array of items, use the first item's schema
-        const item = property.items[0];
-
-        if (item.type === "object" && item.properties) {
-          const nestedCb = tb.addClass(key + "Item");
-          Object.keys(item.properties).forEach((propKey) =>
-            addJsonProperty({
-              tb,
-              cb: nestedCb,
-              property: item.properties![propKey],
-              key: propKey,
-            })
-          );
-          cb.addProperty(key, tb.list(nestedCb.type()));
-        } else {
-          // For primitive types in array
-          cb.addProperty(key, tb.list(getTypeForSchema(tb, item)));
-        }
-      } else {
-        const items = property.items;
-
-        // For single item schema
-        if (items.type === "object" && items.properties) {
-          const nestedCb = tb.addClass(key + "Item");
-          Object.keys(items.properties).forEach((propKey) =>
-            addJsonProperty({
-              tb,
-              cb: nestedCb,
-              property: items.properties![propKey],
-              key: propKey,
-            })
-          );
-          cb.addProperty(key, tb.list(nestedCb.type()));
-        } else {
-          // For primitive types in array
-          cb.addProperty(key, tb.list(getTypeForSchema(tb, items)));
-        }
+        item = property.items[0];
       }
+
+      item = item as Schema;
+
+      if (item.type === "object" && item.properties) {
+        const nestedCb = tb.addClass(key + "Item");
+        Object.keys(item.properties).forEach((propKey) =>
+          addJsonProperty({
+            tb,
+            cb: nestedCb,
+            property: item.properties![propKey],
+            key: propKey,
+          })
+        );
+        cb.addProperty(key, tb.list(nestedCb.type()));
+      } else {
+        // For primitive types in array
+        cb.addProperty(key, tb.list(getTypeForSchema(tb, item, key)));
+      }
+
     } else {
       // Default to string
       cb.addProperty(key, tb.list(tb.string()));

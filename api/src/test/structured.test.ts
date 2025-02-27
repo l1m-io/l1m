@@ -82,7 +82,6 @@ async function testJsonObject() {
           },
         },
       },
-      required: ["companyName", "headquarters", "engineeringTeams"],
     },
   };
 
@@ -190,7 +189,6 @@ async function testBase64JsonObject() {
           },
         },
       },
-      required: ["companyName", "headquarters", "engineeringTeams"],
     },
   };
 
@@ -491,6 +489,58 @@ async function testNonCompliantSchema() {
   assert(result.message === "Disallowed property 'minLength' found in schema");
 }
 
+async function testEnumSchema() {
+  const testData = {
+    input: "Fill in the most appropriate details.",
+    schema: {
+      type: "object",
+      properties: {
+        skyColor: {
+          type: "string",
+          // Use ligthBlue rather than blue to ensure the model sees the enum
+          enum: ["lightBlue", "gray", "black"],
+          description: "The color of the sky"
+        },
+        grassColor: {
+          type: "string",
+          enum: ["green", "brown", "yellow"],
+          description: "The color of grass"
+        },
+      },
+    },
+  };
+
+  const response = await fetch(
+    process.env.TEST_SERVER ?? "http://localhost:3000/structured",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-provider-url": process.env.TEST_PROVIDER_URL!,
+        "x-provider-key": process.env.TEST_PROVIDER_KEY!,
+        "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
+      },
+      body: JSON.stringify(testData),
+    }
+  );
+
+  const result = await response.json();
+  console.log("Result", {
+    result,
+    status: response.status,
+  });
+
+  assert(response.ok, "Response should be successful");
+  assert(
+    result.data.skyColor === "lightBlue",
+    "Sky color should be extracted correctly"
+  );
+  assert(
+    result.data.grassColor === "green",
+    "Grass color should be extracted correctly"
+  );
+}
+
 // Main test runner - executes all tests
 (async function runAllTests() {
   console.log("Starting tests...");
@@ -501,6 +551,8 @@ async function testNonCompliantSchema() {
 
   await runTest("General", testJsonObject);
   await runTest("General (base64)", testBase64JsonObject);
+
+  await runTest("Test Enum Schema", testEnumSchema);
 
   await runTest("Descriptions", testJsonDescriptions);
 

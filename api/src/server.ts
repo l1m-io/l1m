@@ -169,7 +169,7 @@ const router = s.router(apiContract, {
           body: {
             message: "Failed to extract structured data",
             schema,
-            result,
+            data: result,
           },
         };
       }

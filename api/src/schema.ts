@@ -1,9 +1,7 @@
 import Ajv from "ajv";
 
-const ajv = new Ajv();
-
 export const illegalSchemaCheck = (schema: Record<string, any>): string | undefined => {
-  const disallowedKeys = ["minLength", "minimum", "maxLength", "maximum", "oneOf", "anyOf", "allOf", "pattern", "enum"];
+  const disallowedKeys = ["minLength", "minimum", "maxLength", "maximum", "oneOf", "anyOf", "allOf", "pattern"];
 
   for (const key in schema) {
     if (disallowedKeys.includes(key)) {
@@ -24,20 +22,18 @@ export const illegalSchemaCheck = (schema: Record<string, any>): string | undefi
   }
 };
 
-export const validateJsonSchema = (schema: object) => {
+export const validateJsonSchema = (schema: object): boolean => {
+  const ajv = new Ajv();
   try {
-    ajv.compile(schema);
-    return true
-  } catch  {
-    return false
+    ajv.compile(schema); // Compiling ensures validity
+    return true;
+  } catch {
+    return false;
   }
-}
+};
 
-export const validateJson = (schema: object, data: unknown) => {
-  try {
-    ajv.validate(schema, data);
-    return true
-  } catch  {
-    return false
-  }
-}
+export const validateJson = (schema: object, data: unknown): boolean => {
+  const ajv = new Ajv();
+  const validate = ajv.compile(schema); // Compiling avoids re-parsing schema every time
+  return validate(data);
+};
