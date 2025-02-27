@@ -51,14 +51,14 @@ const router = s.router(apiContract, {
       },
     };
   },
-  structured: async ({ body, request, headers, reply }) => {
+  structured: async ({ body, headers, reply }) => {
     const startTime = process.hrtime();
 
     const providerKey = headers["x-provider-key"];
     const providerModel = headers["x-provider-model"];
     const providerUrl = headers["x-provider-url"];
 
-    const { input } = body;
+    const { input, instruction } = body;
     let { schema } = body;
 
     if (!validateJsonSchema(schema)) {
@@ -79,8 +79,6 @@ const router = s.router(apiContract, {
         },
       };
     }
-
-    // Remove refs
     schema = dereferenceSync(schema);
 
     const demoData = getDemoData({
@@ -157,6 +155,7 @@ const router = s.router(apiContract, {
             input,
             type,
             schema,
+            instruction,
             clientRegistry: buildClientRegistry({
               url: providerUrl,
               key: providerKey,

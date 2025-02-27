@@ -15,7 +15,12 @@ assert(process.env.TEST_PROVIDER_MODEL, "TEST_PROVIDER_MODEL must be set");
 assert(process.env.TEST_PROVIDER_URL, "TEST_PROVIDER_URL must be set");
 assert(process.env.TEST_PROVIDER_KEY, "TEST_PROVIDER_KEY must be set");
 
-async function structured(input: string, schema: object, customHeaders: Record<string, string> = {}) {
+async function structured(input: {
+  input: string,
+  instruction?: string
+  schema: object,
+  customHeaders?: Record<string, string>
+}) {
   const response = await fetch(
     process.env.TEST_SERVER ?? "http://localhost:10337/structured",
     {
@@ -25,11 +30,12 @@ async function structured(input: string, schema: object, customHeaders: Record<s
         "x-provider-url": process.env.TEST_PROVIDER_URL!,
         "x-provider-key": process.env.TEST_PROVIDER_KEY!,
         "x-provider-model": process.env.TEST_PROVIDER_MODEL!,
-        ...customHeaders,
+        ...input.customHeaders,
       },
       body: JSON.stringify({
-        input,
-        schema,
+        input: input.input,
+        schema: input.schema,
+        instruction: input.instruction,
       }),
     }
   );
@@ -113,7 +119,7 @@ async function testJsonObject() {
     },
   };
 
-  const { response, result } = await structured(testData.input, testData.schema);
+  const { response, result } = await structured(testData);
 
   assert(response.ok, "Response should be successful");
 
@@ -199,7 +205,7 @@ async function testBase64JsonObject() {
     },
   };
 
-  const { response, result } = await structured(input, schema);
+  const { response, result } = await structured({input, schema});
 
   assert(response.ok, "Response should be successful");
 
@@ -233,7 +239,7 @@ async function testJsonDescriptions() {
     },
   };
 
-  const { response, result } = await structured(input, schema);
+  const { response, result } = await structured({input, schema});
 
   assert(response.ok, "Response should be successful");
 
@@ -258,7 +264,7 @@ async function testImage() {
     },
   };
 
-  const { response, result } = await structured(input, schema);
+  const { response, result } = await structured({input, schema});
 
   assert(response.ok, "Response should be successful");
 
@@ -283,7 +289,7 @@ async function testInvalidInputType() {
     },
   };
 
-  const { response, result } = await structured(input, schema);
+  const { response, result } = await structured({input, schema});
 
   assert(response.status === 400);
   assert(result.message === "Provided content has invalid mime type");
@@ -317,7 +323,7 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
     "x-provider-key": "INVALID",
   };
 
-  const { response, result } = await structured(input, schema, customHeaders);
+  const { response, result } = await structured({input, schema, customHeaders});
 
   assert(
     response.status === 401,
@@ -336,7 +342,7 @@ async function testInvalidSchema() {
     type: "INVLAID",
   };
 
-  const { response, result } = await structured(input, schema);
+  const { response, result } = await structured({input, schema});
 
   assert(response.status === 400);
   assert(result.message === "Provided JSON schema is invalid");
@@ -356,7 +362,7 @@ async function testNonCompliantSchema() {
     }
   };
 
-  const { response, result } = await structured(input, schema);
+  const { response, result } = await structured({input, schema});
 
   assert(response.status === 400);
   assert(result.message === "Disallowed property 'minLength' found in schema");
@@ -381,7 +387,7 @@ async function testEnumSchema() {
     },
   };
 
-  const { response, result } = await structured(input, schema);
+  const { response, result } = await structured({input, schema});
 
   assert(response.ok, "Response should be successful");
   assert(
@@ -391,6 +397,28 @@ async function testEnumSchema() {
   assert(
     result.data.grassColor === "green",
     "Grass color should be extracted correctly"
+  );
+}
+
+
+async function testInstruction() {
+  const instruction = "The word is haystack";
+  const input = "Fill in the most appropriate details.";
+  const schema = {
+    type: "object",
+    properties: {
+      word: {
+        type: "string",
+      },
+    },
+  };
+
+  const { response, result } = await structured({input, schema, instruction});
+
+  assert(response.ok, "Response should be successful");
+  assert(
+    result.data.word === "haystack",
+    "Word should be extracted correctly"
   );
 }
 
@@ -409,7 +437,7 @@ async function testCaching() {
     "x-cache-ttl": "100",
   };
 
-  const { response, result } = await structured(input, schema, customHeaders);
+  const { response, result } = await structured({input, schema, customHeaders});
 
   console.log("Response headers", response.headers);
 
@@ -422,7 +450,7 @@ async function testCaching() {
   assert(response.headers.has("x-cache"));
   assert(response.headers.get("x-cache") === "MISS");
 
-  const { response: secondResponse, result: secondResult } = await structured(input, schema, customHeaders);
+  const { response: secondResponse, result: secondResult } = await structured({input, schema, customHeaders});
 
   console.log("Second response headers", secondResponse.headers);
 
@@ -449,6 +477,8 @@ async function testCaching() {
   await runTest("General (base64)", testBase64JsonObject);
 
   await runTest("Caching", testCaching);
+
+  await runTest("Test Instruction", testInstruction);
 
   await runTest("Test Enum Schema", testEnumSchema);
 

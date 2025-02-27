@@ -183,11 +183,13 @@ const collectDescriptions = (
 export const structured = async ({
   input,
   type,
+  instruction = "",
   schema,
   clientRegistry,
 }: {
   input: string;
   type?: string;
+  instruction?: string;
   schema: Schema;
   clientRegistry?: ClientRegistry;
 }) => {
@@ -212,13 +214,13 @@ export const structured = async ({
 
   try {
     if (type && type.startsWith("image/")) {
-      return await b.ExtractImage(Image.fromBase64(type, input), additional, {
+      return await b.ExtractImage(Image.fromBase64(type, input), instruction, additional, {
         tb,
         clientRegistry,
       });
     }
 
-    return await b.ExtractString(input, additional, { tb, clientRegistry });
+    return await b.ExtractString(input, instruction, additional, { tb, clientRegistry });
   } catch (error) {
     // Special handling for non-parsed Baml errors. i.e OpenRouter 402 errors
     if (

@@ -8,7 +8,7 @@ import requests
 from dotenv import load_dotenv
 from pydantic import BaseModel
 
-from l1m import ClientOptions, L1M, L1MError, ProviderOptions
+from src.l1m.client import ClientOptions, L1M, L1MError, ProviderOptions
 
 # Load environment variables from .env file
 load_dotenv()

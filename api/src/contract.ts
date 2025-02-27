@@ -29,6 +29,7 @@ export const apiContract = c.router({
     path: "/structured",
     body: z.object({
       input: z.string(),
+      instruction: z.string().optional(),
       schema: z.record(z.any()),
     }),
     headers: z.object({

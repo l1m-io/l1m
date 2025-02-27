@@ -114,6 +114,7 @@ type StructuredRequest struct {
 	Input string `json:"input"`
 	// Schema defines the desired output structure using JSON Schema
 	Schema interface{} `json:"schema"`
+	Instruction *string `json:"instruction",omitempty`
 }
 
 // StructuredResponse represents the response from a structured request.

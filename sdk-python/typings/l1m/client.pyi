@@ -18,7 +18,7 @@ class L1MError(Exception):
             body: Response body
         """
         ...
-    
+
 
 
 @dataclass
@@ -41,7 +41,7 @@ class ClientOptions:
 class RequestOptions:
     """Options for a request to the L1M API."""
     provider: ProviderOptions
-    cache_key: Optional[str] = ...
+    cache_ttl: Optional[str] = ...
 
 
 T = TypeVar("T", bound=BaseModel)
@@ -54,7 +54,7 @@ class L1M:
             options: Client options
         """
         ...
-    
+
     def structured(self, input: str, schema: Type[T], options: Optional[RequestOptions] = ...) -> T:
         """Generate a structured response from the L1M API.
 
@@ -70,6 +70,6 @@ class L1M:
             L1MError: If the request fails
         """
         ...
-    
+
 
 

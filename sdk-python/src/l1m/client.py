@@ -77,6 +77,7 @@ class L1M:
         self,
         input: str,
         schema: Type[T],
+        instruction: Optional[str] = None,
         options: Optional[RequestOptions] = None
     ) -> T:
         """Generate a structured response from the L1M API.
@@ -84,6 +85,7 @@ class L1M:
         Args:
             input: Input text (Base64 encoded if image data)
             schema: Pydantic model to validate the response against
+            instruction: Instructions to inject into the prompt (Optional)
             options: Request options
 
         Returns:
@@ -116,7 +118,8 @@ class L1M:
                 headers=headers,
                 json={
                     "input": input,
-                    "schema": schema_dict
+                    "schema": schema_dict,
+                    **({"instruction": instruction} if instruction is not None else {})
                 }
             )
 
