@@ -311,10 +311,10 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
   };
 
   const providerMessageMap = {
-    openrouter: "No auth credentials found",
-    groq: "Invalid API Key",
+    openrouter: "401 No auth credentials found",
+    groq: "401 Invalid API Key",
     openai:
-      "Incorrect API key provided: INVALID. You can find your API key at https://platform.openai.com/account/api-keys.",
+      "401 Incorrect API key provided: INVALID. You can find your API key at https://platform.openai.com/account/api-keys.",
   };
 
   const customHeaders = {
@@ -331,7 +331,7 @@ async function testInvalidApiKey(provider: "openrouter" | "groq" | "openai") {
   );
   assert(result.message === "Failed to call provider");
   assert(
-    result.providerResponse.error.message === providerMessageMap[provider],
+    result.providerMessage === providerMessageMap[provider],
     "Error message should be forwarded from provider"
   );
 }
@@ -471,7 +471,6 @@ async function testCaching() {
     url: process.env.TEST_PROVIDER_URL,
     model: process.env.TEST_PROVIDER_MODEL,
   });
-
 
   await runTest("General", testJsonObject);
   await runTest("General (base64)", testBase64JsonObject);
