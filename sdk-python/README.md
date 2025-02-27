@@ -40,8 +40,10 @@ client = L1M(
 # Generate a structured response
 user_profile = client.structured(
   input="John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
+  # OR   input="<BASE64_ENCODED_IMAGE>",
   schema=UserProfile,
   instruction="Extract details from the provided text.", # Optional
+  options=RequestOptions(cache_ttl=100) # Optional
 )
 ```
 

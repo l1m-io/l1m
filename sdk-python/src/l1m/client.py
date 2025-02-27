@@ -96,7 +96,7 @@ class L1M:
         """
         cache_ttl = options.cache_ttl if options else None
 
-        provider = options.provider if options else (self.provider if self.provider else None)
+        provider = options.provider if (options and options.provider) else (self.provider if self.provider else None)
 
         if not provider:
             raise L1MError("No provider specified")
@@ -111,7 +111,7 @@ class L1M:
             }
 
             if cache_ttl:
-                headers["x-cache-ttl"] = cache_ttl
+                headers["x-cache-ttl"] = str(cache_ttl)
 
             response = self.session.post(
                 f"{self.base_url}/structured",
