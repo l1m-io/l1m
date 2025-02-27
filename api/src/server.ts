@@ -5,15 +5,11 @@ import { apiContract } from "./contract";
 import { dereferenceSync } from "dereference-json-schema";
 import { initServer } from "@ts-rest/fastify";
 import { redis } from "./redis";
-import { buildClientRegistry, parseJsonSubstring, structured } from "./baml";
-import {
-  BamlClientFinishReasonError,
-  BamlClientHttpError,
-  BamlValidationError,
-} from "@boundaryml/baml";
 import { inferMimeType } from "./base64";
 import { getDemoData } from "./demo-provider";
 import { illegalSchemaCheck, validateJson, validateJsonSchema } from "./schema";
+import { structured } from "./model";
+import OpenAI from "openai";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -156,11 +152,11 @@ const router = s.router(apiContract, {
             type,
             schema,
             instruction,
-            clientRegistry: buildClientRegistry({
+            provider: {
               url: providerUrl,
               key: providerKey,
               model: providerModel,
-            }),
+            },
           });
 
       if (!validateJson(schema, result)) {
@@ -208,27 +204,13 @@ const router = s.router(apiContract, {
 });
 
 server.setErrorHandler((error, _, reply) => {
-  // Forward provider error messages / status codes
-  if (error instanceof BamlClientHttpError) {
-    let providerResponse = parseJsonSubstring(error.message);
-
-    reply.status(error.status_code || 500).send({
-      providerResponse,
+  if (error instanceof OpenAI.APIError) {
+    reply.status(error.status || 500).send({
       message: "Failed to call provider",
-    });
-  } else if (
-    error instanceof BamlValidationError ||
-    error instanceof BamlClientFinishReasonError
-  ) {
-    reply.status(422).send({
-      message: "Failed to extract structured data",
-      error: error.message,
-    });
-  } else {
-    reply.status(error.statusCode || 500).send({
-      message: error.message,
-    });
+      providerMessage: error.message
+    })
   }
+  throw error
 });
 
 // Register the routes
