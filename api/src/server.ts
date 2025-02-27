@@ -11,7 +11,8 @@ import { illegalSchemaCheck, validateJson, validateJsonSchema } from "./schema";
 import { structured } from "./model";
 
 import OpenAI from "openai";
-import Anthropic  from "@anthropic-ai/sdk";
+import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAIFetchError } from "@google/generative-ai";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -209,12 +210,20 @@ server.setErrorHandler((error, _, reply) => {
   if (error instanceof OpenAI.APIError || error instanceof Anthropic.APIError) {
     reply.status(error.status || 500).send({
       message: "Failed to call provider",
-      providerMessage: error.message
-    })
+      providerMessage: error.message,
+    });
     return;
   }
 
-  reply.status(500).send({
+  if (error instanceof GoogleGenerativeAIFetchError) {
+    reply.status((error as GoogleGenerativeAIFetchError).status || 500).send({
+      message: "Failed to call provider",
+      providerMessage: error.message,
+    });
+    return;
+  }
+
+  reply.status(error.statusCode || 500).send({
     message: error.message || "Internal server error",
   });
 });
