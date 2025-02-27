@@ -11,7 +11,7 @@ npm install l1m
 ## Usage
 
 ```javascript
-import { L1M } from 'l1m';
+import L1M from 'l1m';
 import { z } from 'zod';
 
 
