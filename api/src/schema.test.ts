@@ -19,7 +19,7 @@ describe('schema', () => {
       },
     };
 
-    const expected1 = "{ skyColor: 'lightBlue' or 'gray' or 'black', grassColor: 'green' or 'brown' or 'yellow' }";
+    const expected1 = "{ skyColor: 'lightBlue' | 'gray' | 'black', grassColor: 'green' | 'brown' | 'yellow' }";
     expect(minimalSchema(schema1)).toBe(expected1);
   });
 
@@ -83,7 +83,7 @@ describe('schema', () => {
       }
     };
 
-    const expected = "{ status: 0 or 1 or 2, mode: 'auto' or 'manual' }";
+    const expected = "{ status: 0 | 1 | 2, mode: 'auto' | 'manual' }";
     expect(minimalSchema(schema)).toBe(expected);
   });
 

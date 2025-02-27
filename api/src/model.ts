@@ -2,6 +2,7 @@ import { Schema } from "jsonschema";
 
 import OpenAI from "openai";
 import { collectDescriptions, minimalSchema } from "./schema";
+import Anthropic from "@anthropic-ai/sdk";
 
 export const structured = async ({
   input,
@@ -21,9 +22,53 @@ export const structured = async ({
     };
   }) => {
 
-
   const minimal = minimalSchema(schema);
   let descriptions = collectDescriptions(schema);
+
+  if (provider.url.includes("api.anthropic.com")) {
+    const anthropic = new Anthropic({
+      apiKey: provider.key,
+    });
+
+    const messages: Anthropic.MessageParam[] = [];
+
+    if (type && type.startsWith("image/")) {
+      messages.push({
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `${instruction} Answer in JSON using this schema: ${descriptions} ${minimal}`
+          },
+          {
+            type: "image",
+            source: {
+              type: "base64",
+              media_type: type as any,
+              data: input
+            }
+          },
+        ]
+      });
+    } else {
+      messages.push({
+        role: "user",
+        content: `${input} ${instruction} Answer in JSON using this schema: ${descriptions} ${minimal}`
+      });
+    }
+
+    const response = await anthropic.messages.create({
+      model: provider.model,
+      messages,
+      max_tokens: 1024,
+    });
+
+    if (response.content[0]?.type === "text") {
+      return parseJsonSubstring(response.content[0].text);
+    } else {
+      throw new Error("Anthropic returned non-text response");
+    }
+  }
 
   const openai = new OpenAI({
     apiKey: provider.key,
@@ -34,7 +79,7 @@ export const structured = async ({
 
   if (type && type.startsWith("image/")) {
     messages.push({
-      role: "system", content: `${instruction} Answer in JSON using this schema: ${descriptions} ${minimal}`
+      role: "user", content: `${instruction} Answer in JSON using this schema: ${descriptions} ${minimal}`
     });
 
     messages.push({
@@ -50,7 +95,7 @@ export const structured = async ({
     });
   } else {
     messages.push({
-      role: "system", content: `${input} ${instruction} Answer in JSON using this schema: ${descriptions} ${minimal}`
+      role: "user", content: `${input} ${instruction} Answer in JSON using this schema: ${descriptions} ${minimal}`
     });
   }
 
@@ -61,6 +106,7 @@ export const structured = async ({
 
   return parseJsonSubstring(completion.choices[0].message.content ?? "");
 };
+
 
 // Attempt to parse a JSON object substring from a string
 export const parseJsonSubstring = (raw: string): unknown | undefined => {

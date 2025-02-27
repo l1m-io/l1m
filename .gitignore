@@ -45,8 +45,6 @@ dump.rdb
 .DS_Store
 Thumbs.db
 
-baml_client
-
 # Python specific
 __pycache__/
 *.py[cod]

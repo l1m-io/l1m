@@ -9,7 +9,9 @@ import { inferMimeType } from "./base64";
 import { getDemoData } from "./demo-provider";
 import { illegalSchemaCheck, validateJson, validateJsonSchema } from "./schema";
 import { structured } from "./model";
+
 import OpenAI from "openai";
+import Anthropic  from "@anthropic-ai/sdk";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -204,12 +206,13 @@ const router = s.router(apiContract, {
 });
 
 server.setErrorHandler((error, _, reply) => {
-  if (error instanceof OpenAI.APIError) {
+  if (error instanceof OpenAI.APIError || error instanceof Anthropic.APIError) {
     reply.status(error.status || 500).send({
       message: "Failed to call provider",
       providerMessage: error.message
     })
   }
+
   throw error
 });
 

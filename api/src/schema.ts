@@ -4,6 +4,7 @@ import { Schema } from "jsonschema";
 
 const ajv = new Ajv();
 
+// Check that the schema matches our minimal implementation
 export const illegalSchemaCheck = (schema: Record<string, any>): string | undefined => {
   const disallowedKeys = ["minLength", "minimum", "maxLength", "maximum", "oneOf", "anyOf", "allOf", "pattern"];
 
@@ -26,28 +27,14 @@ export const illegalSchemaCheck = (schema: Record<string, any>): string | undefi
   }
 };
 
-export const validateJsonSchema = (schema: object): boolean => {
-  try {
-    ajv.compile(schema); // Compiling ensures validity
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-export const validateJson = (schema: object, data: unknown): boolean => {
-  const validate = ajv.compile(schema); // Compiling avoids re-parsing schema every time
-  return validate(data);
-};
-
-
+// Build a minimal representation of the JSON schema for use in prompt
 export const minimalSchema = (schema: Schema): string => {
   if (!schema) return '';
 
   if (schema.enum && Array.isArray(schema.enum)) {
     return schema.enum.map(value =>
       typeof value === 'string' ? `'${value}'` : value
-    ).join(' or ');
+    ).join(' | ');
   }
 
   switch (schema.type) {
@@ -59,7 +46,6 @@ export const minimalSchema = (schema: Schema): string => {
     case 'boolean':
       return 'boolean';
     case 'array':
-      // If items is defined, process the items schema
       if (schema.items) {
         const item = Array.isArray(schema.items) ? schema.items[0] : schema.items;
         const itemsType = minimalSchema(item);
@@ -70,7 +56,7 @@ export const minimalSchema = (schema: Schema): string => {
 
         return `${itemsType}[]`;
       }
-      return 'string[]'; // Default to string[] if items not specified
+      return 'string[]';
     case 'object':
       if (!schema.properties) return '{}';
 
@@ -137,4 +123,19 @@ export const collectDescriptions = (
   }
 
   return descriptions;
+};
+
+
+export const validateJsonSchema = (schema: object): boolean => {
+  try {
+    ajv.compile(schema); // Compiling ensures validity
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const validateJson = (schema: object, data: unknown): boolean => {
+  const validate = ajv.compile(schema); // Compiling avoids re-parsing schema every time
+  return validate(data);
 };
