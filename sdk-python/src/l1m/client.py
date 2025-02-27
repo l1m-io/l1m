@@ -46,7 +46,7 @@ class ClientOptions:
 class RequestOptions:
     """Options for a request to the L1M API."""
 
-    provider: ProviderOptions
+    provider: Optional[ProviderOptions] = None
     cache_ttl: Optional[int] = None
 
 
@@ -96,7 +96,7 @@ class L1M:
         """
         cache_ttl = options.cache_ttl if options else None
 
-        provider = self.provider if self.provider else (options.provider if options else None)
+        provider = options.provider if options else (self.provider if self.provider else None)
 
         if not provider:
             raise L1MError("No provider specified")
