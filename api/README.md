@@ -1,6 +1,6 @@
-# l1m
+# l1m API
 
-A Proxy to extract structured data from text and images using LLMs.
+This directory contains the API implementation for l1m. For general information about l1m, please see the [main README](../README.md).
 
 ## API Endpoints
 
@@ -12,79 +12,12 @@ POST /structured
 
 Extracts structured data from content according to the provided schema.
 
-**Headers:**
-
-- `x-provider-model` (optional): Custom LLM model to use
-- `x-provider-url` (optional): Custom LLM provider URL (OpenAI compatiable or Anthropic API)
-- `x-provider-key` (optional): API key for custom LLM provider
-- `x-cache-ttl` (optional): Cache TTL in seconds
-
 **Request Body:**
 
 - `input` (string): Text content or base64 encoded image data
 - `schema` (object): JSON Schema defining the structure to extract
 
-**Supported Data Types:**
-Base64 encoded image data can be in one of the following formats:
-
-- `image/jpeg`
-- `image/png`
-
-**Example Request (raw text):**
-
-```bash
-curl -X POST https://api.l1m.io/structured \
--H "Content-Type: application/json" \
--H "X-Provider-Url: demo" \
--H "X-Provider-Key: demo" \
--H "X-Provider-Model: demo" \
--d '{
-  "input": "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
-  "schema": {
-    "type": "object",
-    "properties": {
-      "items": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "price": { "type": "number" }
-          }
-        }
-      }
-    }
-  }
-}'
-```
-
-**Example Request (Image via URL):**
-
-```bash
-curl -X POST https://api.l1m.io/structured \
--H "Content-Type: application/json" \
--H "X-Provider-Url: demo" \
--H "X-Provider-Key: demo" \
--H "X-Provider-Model: demo" \
--d '{
-  "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
-  "schema": {
-    "type": "object",
-    "properties": {
-      "items": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "name": { "type": "string" },
-            "price": { "type": "number" }
-          }
-        }
-      }
-    }
-  }
-}'
-```
+For detailed information about headers, supported image formats, and example requests, see the [main README](../README.md#-documentation).
 
 ## Environment Variables
 
