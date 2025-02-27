@@ -33,7 +33,7 @@ type RequestOptions = {
   /**
    * Provider details, optional if the client is initialized with a provider
    */
-  provider: {
+  provider?: {
     model: string;
     url: string;
     key: string;
