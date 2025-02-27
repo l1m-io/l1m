@@ -21,4 +21,6 @@ module.exports = {
   clearMocks: true,
   // Allow for dotenv loading in tests
   setupFilesAfterEnv: ["dotenv/config"],
+  // Test configurations for different run modes
+  testPathIgnorePatterns: ["node_modules"]
 };

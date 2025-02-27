@@ -30,27 +30,42 @@ For detailed information about headers, supported image formats, and example req
 # Start development server with hot reload
 npm run dev
 
-# Run tests (Against groq)
+# Run all tests
+npm run test
+
+# Run only unit tests (excludes integration tests)
+npm run test:unit
+
+# Run integration tests with various providers
+# Note: These tests require provider API keys and environment variables
+
+# Run integration tests (Against Groq)
 export TEST_PROVIDER_MODEL="llama-3.2-90b-vision-preview"
 export TEST_PROVIDER_URL="https://api.groq.com/openai/v1"
 export TEST_PROVIDER_KEY="" # Get your API key from https://console.groq.com/
-npm run test
+npm run test:integration
 
-# Run tests (Against OpenRouter)
+# Run integration tests (Against OpenRouter)
 export TEST_PROVIDER_MODEL="openai/gpt-4o"
 export TEST_PROVIDER_URL="https://openrouter.ai/api/v1"
 export TEST_PROVIDER_KEY="" # Get your API key from https://openrouter.ai
-npm run test
+npm run test:integration
 
-# Run tests (Against OpenAI)
+# Run integration tests (Against OpenAI)
 export TEST_PROVIDER_MODEL="gpt-4o-mini"
 export TEST_PROVIDER_URL="https://api.openai.com/v1"
 export TEST_PROVIDER_KEY="" # Get your API key from https://platform.openai.com
-npm run test
+npm run test:integration
 
-# Run tests (Against Anthropic)
+# Run integration tests (Against Anthropic)
 export TEST_PROVIDER_MODEL="claude-3-7-sonnet-20250219"
 export TEST_PROVIDER_URL="https://api.anthropic.com/v1/messages"
 export TEST_PROVIDER_KEY="" # Get your API key from https://console.anthropic.com
-npm run test
+npm run test:integration
+
+# Run integration tests (Against Google)
+export TEST_PROVIDER_MODEL="gemini-2.0-flash"
+export TEST_PROVIDER_URL="https://generativelanguage.googleapis.com/v1beta"
+export TEST_PROVIDER_KEY="" # Get your API key from https://ai.google.dev
+npm run test:integration
 ```

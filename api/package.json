@@ -38,6 +38,7 @@
     "start": "tsx src/server.ts",
     "dev": "tsx -r dotenv/config --watch src/server.ts",
     "test": "jest --config=jest.config.js",
+    "test:unit": "jest --config=jest.config.js --testPathPattern='^(?!.*integration).*\\.test\\.ts$'",
     "test:integration": "jest --config=jest.config.js src/test/structured.integration.test.ts --detectOpenHandles",
     "build": "tsc --build",
     "watch": "tsc -w",
