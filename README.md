@@ -111,6 +111,13 @@ See [local.md](local.md) for instructions on running l1m locally (and using with
 
 Join our [waitlist](https://docs.google.com/forms/d/1R3AsXBlHjsxh3Mafz1ziji7IUDojlHeSRjpWHroBF-o/viewform) to get early access to the production release of our hosted version.
 
+## 📚 Acknowledgements
+
+- [BAML](https://github.com/boundaryml/baml)
+- [Zod](https://github.com/colinhacks/zod)
+- [ts-rest](https://github.com/ts-rest/ts-rest)
+- [ajv](https://ajv.js.org/)
+
 ## 🏢 About
 
-Built by [Inferable](https://github.com/inferablehq/inferable) 
+Built by [Inferable](https://github.com/inferablehq/inferable).
