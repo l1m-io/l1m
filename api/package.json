@@ -32,6 +32,8 @@
     "build": "npm run baml-generate && tsc --build",
     "baml-generate": "baml-cli generate --from ./src/",
     "watch": "tsc -w",
-    "format": "prettier --write \"**/*.{ts,js,json,md,html,css}\""
+    "format": "prettier --write \"**/*.{ts,js,json,md,html,css}\"",
+    "docker:build": "docker build -t l1m .",
+    "docker:publish": "docker tag l1m inferable/l1m:latest && docker push inferable/l1m:latest"
   }
 }

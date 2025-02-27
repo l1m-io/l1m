@@ -1,3 +1,7 @@
+/**
+ * These outputs have been generated with claude-3-5-sonnet as of 25/02/2025
+ */
+
 export const isDemoProvider = ({
   providerKey,
   providerModel,
@@ -8,9 +12,7 @@ export const isDemoProvider = ({
   providerUrl: string;
 }) => {
   return (
-    providerKey === "demo" &&
-    providerModel === "demo" &&
-    providerUrl === "demo"
+    providerKey === "demo" && providerModel === "demo" && providerUrl === "demo"
   );
 };
 
@@ -29,9 +31,7 @@ export const getDemoData = ({
   providerModel: string;
   providerUrl: string;
 }) => {
-  if (
-    isDemoProvider({ providerKey, providerModel, providerUrl })
-  ) {
+  if (isDemoProvider({ providerKey, providerModel, providerUrl })) {
     if (
       input.trim().startsWith(`/9j/4Q/`) &&
       input.trim() === imageBase64 &&

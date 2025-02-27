@@ -20,6 +20,7 @@ l1m is the easiest way to get structured data from unstructured text or images u
 - **⚡ Caching:** Built-in caching, with `x-cache-ttl` (seconds) header to use l1m.io as a cache for your LLM requests
 - **🔓 Open Source:** Open-source, no vendor lock-in. Or use the hosted version with free-tier and high availability
 - **🔒 Privacy First:** We don't store your data, unless you use the `x-cache-ttl` header
+- **⚡️ Works Locally:** Use l1m locally with Ollama or any other OpenAI compatible model provider
 
 ## 🚀 Quick Start
 
@@ -102,10 +103,9 @@ Official SDKs are available for:
 - [Python](https://github.com/inferablehq/l1m/tree/main/sdk-python)
 - [Go](https://github.com/inferablehq/l1m/tree/main/sdk-go)
 
-## 💰 Managed API Pricing
+## ⚡️ Running Locally
 
-- **Free Tier:** First 500 requests free
-- **Standard:** ~~$5 per 10,000 requests~~ (free during open beta)
+See [local.md](local.md) for instructions on running l1m locally (and using with Ollama).
 
 ## 🔔 Stay Updated
 
