@@ -16,6 +16,7 @@ Extracts structured data from content according to the provided schema.
 
 - `input` (string): Text content or base64 encoded image data
 - `schema` (object): JSON Schema defining the structure to extract
+- `instruction` (string): Instructions for the model (Optional, "e.g" to "Extract details from the provided content")
 
 For detailed information about headers, supported image formats, and example requests, see the [main README](../README.md#-documentation).
 

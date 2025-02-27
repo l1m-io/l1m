@@ -23,6 +23,10 @@ type StructuredRequestInput<T extends z.ZodObject<any> | unknown> = {
    * Json Schema (or Zod) to be returned
    */
   schema: T;
+  /**
+   * (Optional) Instruction to inject into the prompt
+   */
+  instruction?: string
 };
 
 type RequestOptions = {
@@ -78,7 +82,7 @@ export class L1M {
    * Generate a structured response from the L1M API.
    */
   async structured<T extends z.ZodObject<any>, TOutput = z.infer<T>>(
-    { input, schema }: StructuredRequestInput<T>,
+    { input, schema, instruction }: StructuredRequestInput<T>,
     options?: RequestOptions
   ): Promise<TOutput> {
     const provider = this.provider ?? options?.provider;
@@ -93,6 +97,7 @@ export class L1M {
         {
           input,
           schema: zodToJsonSchema(schema),
+          instruction
         },
         {
           headers: {
