@@ -113,6 +113,13 @@ export const buildClientRegistry = (provider: {
       },
     });
     clientRegistry.setPrimary("anthropic");
+  } else if (provider.url.includes("generativelanguage.googleapis.com")) {
+    clientRegistry.addLlmClient("google", "google-ai", {
+      api_key: provider.key,
+      model: provider.model,
+    });
+    clientRegistry.setPrimary("google");
+
   } else {
     clientRegistry.addLlmClient("custom", "openai-generic", {
       base_url: provider.url,
