@@ -51,7 +51,7 @@ const router = s.router(apiContract, {
       },
     };
   },
-  structured: async ({ body, request, headers }) => {
+  structured: async ({ body, request, headers, reply }) => {
     const startTime = process.hrtime();
 
     const providerKey = headers["x-provider-key"];
@@ -149,6 +149,7 @@ const router = s.router(apiContract, {
         : null;
 
       const fromCache = cacheKey ? await redis?.get(cacheKey) : null;
+      reply.header("x-cache", fromCache ? "HIT" : "MISS");
 
       let result = fromCache
         ? JSON.parse(fromCache)
@@ -207,7 +208,7 @@ const router = s.router(apiContract, {
   },
 });
 
-server.setErrorHandler((error, request, reply) => {
+server.setErrorHandler((error, _, reply) => {
   // Forward provider error messages / status codes
   if (error instanceof BamlClientHttpError) {
     let providerResponse = parseJsonSubstring(error.message);
