@@ -146,7 +146,12 @@ export const validateJsonSchema = (schema: object): boolean => {
   }
 };
 
-export const validateJson = (schema: object, data: unknown): boolean => {
+export const validateResult = (schema: object, data: unknown) => {
   const validate = ajv.compile(schema); // Compiling avoids re-parsing schema every time
-  return validate(data);
+  const valid = validate(data);
+
+  return {
+    errors: validate.errors,
+    valid,
+  }
 };

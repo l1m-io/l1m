@@ -1,14 +1,14 @@
-import crypto from "crypto";
 import fastify from "fastify";
 
 import { apiContract } from "./contract";
 import { dereferenceSync } from "dereference-json-schema";
 import { initServer } from "@ts-rest/fastify";
-import { redis } from "./redis";
+import { generateCacheKey, redis } from "./redis";
 import { inferMimeType } from "./base64";
 import { getDemoData } from "./demo-provider";
-import { illegalSchemaCheck, validateJson, validateJsonSchema } from "./schema";
+import { illegalSchemaCheck, validateResult, validateJsonSchema } from "./schema";
 import { structured } from "./model";
+import { validMimeTypes } from "./constants";
 
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
@@ -16,19 +16,6 @@ import { GoogleGenerativeAIFetchError } from "@google/generative-ai";
 
 const server = fastify({ logger: true });
 const s = initServer();
-
-const generateCacheKey = (input: string[]) => {
-  const hash = crypto.createHash("sha256");
-  input.forEach((text) => hash.update(text));
-  return hash.digest("hex");
-};
-
-const validMimeTypes = [
-  "text/plain",
-  "application/json",
-  "image/jpeg",
-  "image/png",
-];
 
 const router = s.router(apiContract, {
   home: async () => {
@@ -126,7 +113,7 @@ const router = s.router(apiContract, {
 
       const ttl = parseInt(headers["x-cache-ttl"] ?? "0");
 
-      if (ttl < 0 || ttl > 60 * 60 * 24 * 30) {
+      if (ttl < 0 || ttl > 60 * 60 * 24 * 7) {
         return {
           status: 400,
           body: {
@@ -148,8 +135,11 @@ const router = s.router(apiContract, {
       const fromCache = cacheKey ? await redis?.get(cacheKey) : null;
       reply.header("x-cache", fromCache ? "HIT" : "MISS");
 
-      let result = fromCache
-        ? JSON.parse(fromCache)
+      let parsedResult = fromCache
+        ? {
+          structured: JSON.parse(fromCache),
+          raw: undefined
+        }
         : await structured({
             input,
             type,
@@ -162,19 +152,21 @@ const router = s.router(apiContract, {
             },
           });
 
-      if (!validateJson(schema, result)) {
+      const validation = validateResult(schema, parsedResult.structured)
+      if (!validation.valid) {
         return {
           status: 422,
           body: {
             message: "Failed to extract structured data",
-            schema,
-            data: result,
+            validation: validation.errors,
+            raw: parsedResult.raw,
+            data: parsedResult.structured,
           },
         };
       }
 
       if (!fromCache && cacheKey) {
-        await redis?.set(cacheKey, JSON.stringify(result), "EX", ttl);
+        await redis?.set(cacheKey, JSON.stringify(parsedResult.structured), "EX", ttl);
       }
 
       server.log.info({
@@ -186,7 +178,7 @@ const router = s.router(apiContract, {
       return {
         status: 200,
         body: {
-          data: result,
+          data: parsedResult.structured,
         },
       };
     } catch (error) {
@@ -246,3 +238,33 @@ const start = async () => {
 };
 
 start();
+
+process.on('SIGTERM', () => {
+  server.log.info('SIGTERM signal received: closing HTTP server')
+  shutdown()
+})
+
+process.on('SIGINT', () => {
+  server.log.info('SIGINT signal received: closing HTTP server')
+  shutdown()
+})
+
+const shutdown = async () => {
+  try {
+    // Close the server first (stop accepting new connections)
+    await server.close()
+    server.log.info('HTTP server closed')
+
+    // Close Redis connection if it exists
+    if (redis && redis.quit) {
+      await redis.quit()
+      server.log.info('Redis connection closed')
+    }
+
+    server.log.info('Shutdown completed')
+    process.exit(0)
+  } catch (err) {
+    server.log.error(err)
+    process.exit(1)
+  }
+}

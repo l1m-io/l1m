@@ -240,7 +240,7 @@ describe("Structured Data Extraction API", () => {
 
     expect(response.ok).toBeTruthy();
     expect(result.data.character).toBe("Shrek");
-  });
+  }, 10_000);
 
   test("rejects invalid input types", async () => {
     const url =

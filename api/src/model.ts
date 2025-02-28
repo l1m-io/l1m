@@ -23,7 +23,7 @@ interface StructuredParams {
  */
 export const structured = async (
   params: StructuredParams
-): Promise<unknown> => {
+)  => {
   const { schema, provider } = params;
 
   const minimal = minimalSchema(schema);
@@ -44,22 +44,42 @@ export const structured = async (
 /**
  * Extracts and parses a JSON object from a string
  */
-const parseJsonSubstring = (raw: string): unknown | null => {
-  const jsonMatch = raw.match(/{.*}/s); // Match JSON-like content
-  if (!jsonMatch) return null;
+export const parseJsonSubstring = (raw: string) => {
+  const simpleMatch = raw.match(/{.*}/s)?.reverse();
+  const standaloneMatches = raw.match(/\{[\s\S]*?\}/g)?.reverse();
 
-  try {
-    return JSON.parse(jsonMatch[0]);
-  } catch {
-    return null;
+  const matches = [
+    ...(simpleMatch ?? []),
+    ...(standaloneMatches ?? []),
+  ]
+
+  for (const match of matches) {
+    if (!match) {
+      continue;
+    }
+
+    try {
+      return {
+        raw,
+        structured: JSON.parse(match),
+      };
+    } catch (e) {
+      continue;
+    }
   }
+
+  return {
+    raw,
+    structured: null,
+  };
 };
+
 
 const processWithGoogle = async (
   params: StructuredParams,
   minimal: string,
   descriptions: string
-): Promise<unknown> => {
+) => {
   const { input, type, instruction, provider } = params;
   const google = new GoogleGenerativeAI(provider.key);
   const model = google.getGenerativeModel({ model: provider.model });
@@ -93,7 +113,7 @@ const processWithAnthropic = async (
   params: StructuredParams,
   minimal: string,
   descriptions: string
-): Promise<unknown> => {
+) => {
   const { input, type, instruction, provider } = params;
   const anthropic = new Anthropic({
     apiKey: provider.key,
@@ -141,7 +161,7 @@ const processWithOpenAI = async (
   params: StructuredParams,
   minimal: string,
   descriptions: string
-): Promise<unknown> => {
+) => {
   const { input, type, instruction, provider } = params;
   const openai = new OpenAI({
     apiKey: provider.key,
