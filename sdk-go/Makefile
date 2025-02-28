@@ -1,7 +1,7 @@
 .PHONY: patch-release test
 
-# Get the current version by sorting git tags and taking the last one
-CURRENT_VERSION=$(shell git --no-pager tag | sort -V | tail -n 1 || echo "v0.0.0")
+# Get the current version by sorting sdk-go/ git tags and taking the last one
+CURRENT_VERSION=$(git --no-pager tag | grep "^sdk-go/v" | sed 's/^sdk-go\///' | sort -V | tail -n 1 || echo "v0.0.0")
 # Parse major, minor, and patch versions, stripping the 'v' prefix for calculations
 MAJOR=$(shell echo $(CURRENT_VERSION) | sed 's/v//' | cut -d. -f1)
 MINOR=$(shell echo $(CURRENT_VERSION) | cut -d. -f2)

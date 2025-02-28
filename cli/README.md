@@ -34,7 +34,7 @@ The l1m CLI allows you to extract structured data from text using LLMs directly 
 ### Basic Usage
 
 ```bash
-echo "The price of AAPL is $150.50" | l1m -s '{"type":"object","properties":{"stock":{"type":"string"},"price":{"type":"number"}}}'
+echo "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913" | l1m -s '{"type":"object","properties":{"year":{"type":"number"},"act":{"type":"string"}}}'
 ```
 
 ### Command Line Options
@@ -60,16 +60,16 @@ Environment Variables:
 
 ### Examples
 
-#### Extract Stock Information
+#### Extract Historical Information
 
 ```bash
-echo "The price of AAPL is $150.50" | l1m -s '{"type":"object","properties":{"stock":{"type":"string"},"price":{"type":"number"}}}'
+echo "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913" | l1m -s '{"type":"object","properties":{"year":{"type":"number"},"act":{"type":"string"}}}'
 ```
 
 #### Process an Image
 
 ```bash
-cat menu.jpg | base64 | l1m -s '{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"price":{"type":"number"}}}}}}'
+curl -s https://public.l1m.io/menu.jpg | base64 | l1m -s '{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"price":{"type":"number"}}}}}}'
 ```
 
 #### Add Custom Instructions

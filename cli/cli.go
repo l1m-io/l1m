@@ -5,7 +5,7 @@
 //
 // Usage:
 //
-//	echo "The price of AAPL is $150.50" | l1m -s '{"type":"object","properties":{"stock":{"type":"string"},"price":{"type":"number"}}}'
+//	echo "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913" | l1m -s '{"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"},"price":{"type":"number"}}}}}}'
 //
 // For more information, see https://l1m.io
 package main
@@ -20,6 +20,11 @@ import (
 	l1m "github.com/inferablehq/l1m/sdk-go"
 )
 
+// Version information - will be set during build
+var (
+	Version = "dev"
+)
+
 func main() {
 	// Define command line flags
 	schemaFlag := flag.String("s", "", "JSON schema for structuring the data (required)")
@@ -28,10 +33,17 @@ func main() {
 	providerKeyFlag := flag.String("key", os.Getenv("L1M_PROVIDER_KEY"), "Provider API key (defaults to L1M_PROVIDER_KEY env var)")
 	providerModelFlag := flag.String("model", os.Getenv("L1M_PROVIDER_MODEL"), "Provider model (defaults to L1M_PROVIDER_MODEL env var)")
 	baseURLFlag := flag.String("base-url", os.Getenv("L1M_BASE_URL"), "L1M base URL (defaults to L1M_BASE_URL env var or https://api.l1m.io)")
+	versionFlag := flag.Bool("version", false, "Show version information")
 	helpFlag := flag.Bool("h", false, "Show help")
 
 	// Parse flags
 	flag.Parse()
+
+	// Show version if requested
+	if *versionFlag {
+		fmt.Printf("l1m version %s\n", Version)
+		os.Exit(0)
+	}
 
 	// Show help if requested or if required flags are missing
 	if *helpFlag || *schemaFlag == "" {
@@ -113,6 +125,7 @@ func printUsage() {
 	fmt.Fprintf(os.Stderr, "  -key <key>          Provider API key (defaults to L1M_PROVIDER_KEY env var)\n")
 	fmt.Fprintf(os.Stderr, "  -model <model>      Provider model (defaults to L1M_PROVIDER_MODEL env var)\n")
 	fmt.Fprintf(os.Stderr, "  -base-url <url>     L1M base URL (defaults to L1M_BASE_URL env var or https://api.l1m.io)\n")
+	fmt.Fprintf(os.Stderr, "  -version            Show version information\n")
 	fmt.Fprintf(os.Stderr, "  -h                  Show this help message\n\n")
 	fmt.Fprintf(os.Stderr, "Environment Variables:\n")
 	fmt.Fprintf(os.Stderr, "  L1M_PROVIDER_URL    Default provider URL\n")
@@ -120,6 +133,6 @@ func printUsage() {
 	fmt.Fprintf(os.Stderr, "  L1M_PROVIDER_MODEL  Default provider model\n")
 	fmt.Fprintf(os.Stderr, "  L1M_BASE_URL        Default L1M base URL\n\n")
 	fmt.Fprintf(os.Stderr, "Examples:\n")
-	fmt.Fprintf(os.Stderr, "  echo \"The price of AAPL is $150.50\" | l1m -s '{\"type\":\"object\",\"properties\":{\"stock\":{\"type\":\"string\"},\"price\":{\"type\":\"number\"}}}'\n")
-	fmt.Fprintf(os.Stderr, "  cat menu.jpg | base64 | l1m -s '{\"type\":\"object\",\"properties\":{\"items\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"price\":{\"type\":\"number\"}}}}}}'\n")
+	fmt.Fprintf(os.Stderr, "  echo \"A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913\" | l1m -s '{\"type\":\"object\",\"properties\":{\"items\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"price\":{\"type\":\"number\"}}}}}}'\n")
+	fmt.Fprintf(os.Stderr, "  curl -s https://public.l1m.io/menu.jpg | base64 | l1m -s '{\"type\":\"object\",\"properties\":{\"items\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"price\":{\"type\":\"number\"}}}}}}'\n")
 }
