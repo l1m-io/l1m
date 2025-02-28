@@ -27,6 +27,45 @@ sudo mv l1m /usr/local/bin/
 go install github.com/inferablehq/l1m/cli@latest
 ```
 
+<details>
+<summary>Setting up GOPATH in your PATH</summary>
+
+The `go install` command places binaries in the `$GOPATH/bin` directory. To use the installed binary from anywhere, you need to add this directory to your PATH.
+
+For **Bash** (add to `~/.bashrc` or `~/.bash_profile`):
+```bash
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.bashrc
+```
+
+For **Zsh** (add to `~/.zshrc`):
+```bash
+echo 'export PATH="$PATH:$(go env GOPATH)/bin"' >> ~/.zshrc
+```
+
+For **Fish** (add to `~/.config/fish/config.fish`):
+```fish
+echo 'set -gx PATH $PATH (go env GOPATH)/bin' >> ~/.config/fish/config.fish
+```
+
+After adding this line, reload your shell configuration:
+```bash
+# For Bash
+source ~/.bashrc  # or source ~/.bash_profile
+
+# For Zsh
+source ~/.zshrc
+
+# For Fish
+source ~/.config/fish/config.fish
+```
+
+You can verify the installation by running:
+```bash
+l1m -version
+```
+
+</details>
+
 ## Usage
 
 The l1m CLI allows you to extract structured data from text using LLMs directly from your terminal.
@@ -49,6 +88,7 @@ Options:
   -key <key>          Provider API key (defaults to L1M_PROVIDER_KEY env var)
   -model <model>      Provider model (defaults to L1M_PROVIDER_MODEL env var)
   -base-url <url>     L1M base URL (defaults to L1M_BASE_URL env var or https://api.l1m.io)
+  -version            Show version information
   -h                  Show this help message
 
 Environment Variables:
