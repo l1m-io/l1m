@@ -75,7 +75,7 @@ export const minimalSchema = (schema: Schema): string => {
 
       const properties = Object.entries(schema.properties)
         .map(([key, propSchema]) => {
-          const propValue = minimalSchema(propSchema as JSONSchema);
+          const propValue = minimalSchema(propSchema);
           return `${key}: ${propValue}`;
         })
         .join(", ");
