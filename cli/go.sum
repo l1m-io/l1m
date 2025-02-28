@@ -1,2 +1,4 @@
+github.com/inferablehq/l1m/sdk-go v0.0.10 h1:lfNNzDjHyEy550VKZtpQSildyIPc11PbiJQ6l4rU/AA=
+github.com/inferablehq/l1m/sdk-go v0.0.10/go.mod h1:8Q3zT+rNa2GulUvsJeqqUdR1tKflx1l3/zgcNMX1/Bw=
 github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
 github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
