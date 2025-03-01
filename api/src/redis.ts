@@ -8,7 +8,6 @@ export const redis = process.env.REDIS_URL
     })
   : null;
 
-
 export const generateCacheKey = (input: string[]) => {
   const hash = crypto.createHash("sha256");
   input.forEach((text) => hash.update(text));

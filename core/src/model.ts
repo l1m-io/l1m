@@ -1,5 +1,6 @@
-import { collectDescriptions, minimalSchema } from "./schema";
+import { collectDescriptions, minimalSchema, validateResult } from "./schema";
 import { Schema } from "jsonschema";
+
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { GoogleGenerativeAI, Part } from "@google/generative-ai";
@@ -21,24 +22,36 @@ interface StructuredParams {
 /**
  * Process structured data from different providers
  */
-export const structured = async (
-  params: StructuredParams
-)  => {
+export const structured = async (params: StructuredParams) => {
   const { schema, provider } = params;
 
   const minimal = minimalSchema(schema);
   const descriptions = collectDescriptions(schema);
 
+  let result: {
+    raw: string;
+    structured: Record<string, any> | null;
+  } = {
+    raw: "",
+    structured: null,
+  };
+
   if (provider.url.includes("generativelanguage.googleapis.com")) {
-    return processWithGoogle(params, minimal, descriptions);
+    result = await processWithGoogle(params, minimal, descriptions);
   }
 
   if (provider.url.includes("api.anthropic.com")) {
-    return processWithAnthropic(params, minimal, descriptions);
+    result = await processWithAnthropic(params, minimal, descriptions);
   }
 
   // Default to OpenAI if no more-specific provider is inferred
-  return processWithOpenAI(params, minimal, descriptions);
+  result = await processWithOpenAI(params, minimal, descriptions);
+
+  return {
+    raw: result.raw,
+    structured: result.structured,
+    ...validateResult(schema, result.structured),
+  };
 };
 
 /**
@@ -48,10 +61,7 @@ export const parseJsonSubstring = (raw: string) => {
   const simpleMatch = raw.match(/{.*}/s)?.reverse();
   const standaloneMatches = raw.match(/\{[\s\S]*?\}/g)?.reverse();
 
-  const matches = [
-    ...(simpleMatch ?? []),
-    ...(standaloneMatches ?? []),
-  ]
+  const matches = [...(simpleMatch ?? []), ...(standaloneMatches ?? [])];
 
   for (const match of matches) {
     if (!match) {
@@ -73,7 +83,6 @@ export const parseJsonSubstring = (raw: string) => {
     structured: null,
   };
 };
-
 
 const processWithGoogle = async (
   params: StructuredParams,
