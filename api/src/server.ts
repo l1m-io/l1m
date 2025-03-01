@@ -1,18 +1,12 @@
 import fastify from "fastify";
 
 import { apiContract } from "./contract";
-import { dereferenceSync } from "dereference-json-schema";
 import { initServer } from "@ts-rest/fastify";
 import { generateCacheKey, redis } from "./redis";
 import { inferMimeType } from "./base64";
 import { getDemoData } from "./demo-provider";
-import { illegalSchemaCheck, validateResult, validateJsonSchema } from "./schema";
-import { structured } from "./model";
-import { validMimeTypes } from "./constants";
 
-import OpenAI from "openai";
-import Anthropic from "@anthropic-ai/sdk";
-import { GoogleGenerativeAIFetchError } from "@google/generative-ai";
+import { validateJsonSchema, structured, validTypes } from "@l1m/core";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -47,16 +41,7 @@ const router = s.router(apiContract, {
     const { input, instruction } = body;
     let { schema } = body;
 
-    if (!validateJsonSchema(schema)) {
-      return {
-        status: 400,
-        body: {
-          message: "Provided JSON schema is invalid",
-        },
-      };
-    }
-
-    const schemaError = illegalSchemaCheck(schema);
+    const schemaError = validateJsonSchema(schema);
     if (schemaError) {
       return {
         status: 400,
@@ -65,7 +50,6 @@ const router = s.router(apiContract, {
         },
       };
     }
-    schema = dereferenceSync(schema);
 
     const demoData = getDemoData({
       input,
@@ -86,7 +70,7 @@ const router = s.router(apiContract, {
 
     const type = await inferMimeType(input);
 
-    if (type && !validMimeTypes.includes(type)) {
+    if (type && !validTypes.includes(type)) {
       server.log.warn({
         route: "structured",
         error: "Invalid mime type",
@@ -135,38 +119,39 @@ const router = s.router(apiContract, {
       const fromCache = cacheKey ? await redis?.get(cacheKey) : null;
       reply.header("x-cache", fromCache ? "HIT" : "MISS");
 
-      let parsedResult = fromCache
-        ? {
+      const result = fromCache ?
+        {
           structured: JSON.parse(fromCache),
-          raw: undefined
-        }
-        : await structured({
-            input,
-            type,
-            schema,
-            instruction,
-            provider: {
-              url: providerUrl,
-              key: providerKey,
-              model: providerModel,
-            },
-          });
+          valid: true,
+          raw: undefined,
+          errors: undefined,
+        } :
+        await structured({
+          input,
+          type,
+          schema,
+          instruction,
+          provider: {
+            url: providerUrl,
+            key: providerKey,
+            model: providerModel,
+          },
+        });
 
-      const validation = validateResult(schema, parsedResult.structured)
-      if (!validation.valid) {
+      if (!result.valid) {
         return {
           status: 422,
           body: {
             message: "Failed to extract structured data",
-            validation: validation.errors,
-            raw: parsedResult.raw,
-            data: parsedResult.structured,
+            validation: result.errors,
+            raw: result.raw,
+            data: result.structured,
           },
         };
       }
 
       if (!fromCache && cacheKey) {
-        await redis?.set(cacheKey, JSON.stringify(parsedResult.structured), "EX", ttl);
+        await redis?.set(cacheKey, JSON.stringify(result.structured), "EX", ttl);
       }
 
       server.log.info({
@@ -178,7 +163,7 @@ const router = s.router(apiContract, {
       return {
         status: 200,
         body: {
-          data: parsedResult.structured,
+          data: result.structured,
         },
       };
     } catch (error) {
@@ -199,23 +184,13 @@ const router = s.router(apiContract, {
 });
 
 server.setErrorHandler((error, _, reply) => {
-  if (error instanceof OpenAI.APIError || error instanceof Anthropic.APIError) {
-    reply.status(error.status || 500).send({
-      message: "Failed to call provider",
-      providerMessage: error.message,
-    });
-    return;
+  let status = error.statusCode || 500;
+  if ('status' in error && typeof error.status === 'number') {
+    status = error.status;
+
   }
 
-  if (error instanceof GoogleGenerativeAIFetchError) {
-    reply.status((error as GoogleGenerativeAIFetchError).status || 500).send({
-      message: "Failed to call provider",
-      providerMessage: error.message,
-    });
-    return;
-  }
-
-  reply.status(error.statusCode || 500).send({
+  reply.status(status).send({
     message: error.message || "Internal server error",
   });
 });

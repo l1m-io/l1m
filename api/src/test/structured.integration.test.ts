@@ -264,12 +264,7 @@ describe("Structured Data Extraction API", () => {
   });
 
   test.each([
-    [
-      "groq",
-      "https://api.groq.com/openai/v1",
-      "401 Invalid API Key",
-      401
-    ],
+    ["groq", "https://api.groq.com/openai/v1", "401 Invalid API Key", 401],
     [
       "openrouter",
       "https://openrouter.ai/api/v1",
@@ -285,8 +280,10 @@ describe("Structured Data Extraction API", () => {
     [
       "google",
       "https://generativelanguage.googleapis.com/v1beta",
-      expect.stringContaining("API key not valid. Please pass a valid API key."),
-      400
+      expect.stringContaining(
+        "API key not valid. Please pass a valid API key."
+      ),
+      400,
     ],
   ])(
     "rejects invalid API key for %s provider",
@@ -312,8 +309,7 @@ describe("Structured Data Extraction API", () => {
       });
 
       expect(response.status).toBe(expectedStatus);
-      expect(result.message).toEqual("Failed to call provider");
-      expect(result.providerMessage).toEqual(expectedMessage);
+      expect(result.message).toEqual(expectedMessage);
     }
   );
 

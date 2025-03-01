@@ -2,13 +2,17 @@ import { parseJsonSubstring } from "./model";
 
 describe("parseJsonSubstring", () => {
   test("Extracts JSON from a code block", () => {
-    const input = "Here is JSON:\n```json\n{\n\"character\": \"Shrek\"\n}\n```";
-    expect(parseJsonSubstring(input).structured).toEqual({ character: "Shrek" });
+    const input = 'Here is JSON:\n```json\n{\n"character": "Shrek"\n}\n```';
+    expect(parseJsonSubstring(input).structured).toEqual({
+      character: "Shrek",
+    });
   });
 
   test("Extracts JSON from plain text", () => {
-    const input = "\n{\n\"character\": \"Shrek\"\n}\n";
-    expect(parseJsonSubstring(input).structured).toEqual({ character: "Shrek" });
+    const input = '\n{\n"character": "Shrek"\n}\n';
+    expect(parseJsonSubstring(input).structured).toEqual({
+      character: "Shrek",
+    });
   });
 
   test("Chooses last JSON object when multiple exist", () => {
@@ -20,7 +24,9 @@ describe("parseJsonSubstring", () => {
     {
       "character": "Donkey"
     }`;
-    expect(parseJsonSubstring(input).structured).toEqual({ character: "Donkey" });
+    expect(parseJsonSubstring(input).structured).toEqual({
+      character: "Donkey",
+    });
   });
 
   test("Extracts JSON from last valid code block", () => {
@@ -34,7 +40,9 @@ describe("parseJsonSubstring", () => {
     \`\`\`json
     { "character": "Donkey" }
     \`\`\``;
-    expect(parseJsonSubstring(input).structured).toEqual({ character: "Donkey" });
+    expect(parseJsonSubstring(input).structured).toEqual({
+      character: "Donkey",
+    });
   });
 
   test("Handles JSON with nested objects", () => {
@@ -58,13 +66,18 @@ describe("parseJsonSubstring", () => {
   });
 
   test("Handles text before and after JSON", () => {
-    const input = "Some text before\n{\n\"character\": \"Shrek\"\n}\nSome text after";
-    expect(parseJsonSubstring(input).structured).toEqual({ character: "Shrek" });
+    const input =
+      'Some text before\n{\n"character": "Shrek"\n}\nSome text after';
+    expect(parseJsonSubstring(input).structured).toEqual({
+      character: "Shrek",
+    });
   });
 
   test("Handles JSON with spaces and newlines", () => {
-    const input = "  \n  {  \n  \"character\"  :  \"Shrek\"  \n  }  \n  ";
-    expect(parseJsonSubstring(input).structured).toEqual({ character: "Shrek" });
+    const input = '  \n  {  \n  "character"  :  "Shrek"  \n  }  \n  ';
+    expect(parseJsonSubstring(input).structured).toEqual({
+      character: "Shrek",
+    });
   });
 
   test("Ignores invalid/malformed JSON", () => {
@@ -82,4 +95,3 @@ describe("parseJsonSubstring", () => {
     expect(parseJsonSubstring(input).structured).toBeNull();
   });
 });
-

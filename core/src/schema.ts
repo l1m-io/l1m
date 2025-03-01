@@ -1,46 +1,15 @@
 import Ajv from "ajv";
 
 import { Schema } from "jsonschema";
+import { dereferenceSync } from "dereference-json-schema";
 
 const ajv = new Ajv();
-
-// Check that the schema matches our minimal implementation
-export const illegalSchemaCheck = (
-  schema: Record<string, any>
-): string | undefined => {
-  const disallowedKeys = [
-    "minLength",
-    "minimum",
-    "maxLength",
-    "maximum",
-    "oneOf",
-    "anyOf",
-    "allOf",
-    "pattern",
-  ];
-
-  for (const key in schema) {
-    if (disallowedKeys.includes(key)) {
-      return `Disallowed property '${key}' found in schema`;
-    }
-
-    if (key === "properties" && typeof schema[key] === "object") {
-      for (const prop of Object.values(schema[key])) {
-        const error = illegalSchemaCheck(prop as Record<string, any>);
-        if (error) return error;
-      }
-    }
-
-    if (key === "items" && typeof schema[key] === "object") {
-      const error = illegalSchemaCheck(schema[key]);
-      if (error) return error;
-    }
-  }
-};
 
 // Build a minimal representation of the JSON schema for use in prompt
 export const minimalSchema = (schema: Schema): string => {
   if (!schema) return "";
+
+  schema = dereferenceSync(schema);
 
   if (schema.enum && Array.isArray(schema.enum)) {
     return schema.enum
@@ -137,21 +106,55 @@ export const collectDescriptions = (
   return descriptions;
 };
 
-export const validateJsonSchema = (schema: object): boolean => {
-  try {
-    ajv.compile(schema); // Compiling ensures validity
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 export const validateResult = (schema: object, data: unknown) => {
-  const validate = ajv.compile(schema); // Compiling avoids re-parsing schema every time
+  const validate = ajv.compile(schema);
   const valid = validate(data);
 
   return {
-    errors: validate.errors,
     valid,
+    errors: validate.errors,
+  };
+};
+
+export const validateJsonSchema = (schema: object) => {
+  try {
+    ajv.compile(schema);
+    return illegalSchemaCheck(schema);
+  } catch {
+    return "Provided JSON schema is invalid";
+  }
+};
+
+// Check that the schema matches our minimal implementation
+const illegalSchemaCheck = (
+  schema: Record<string, any>
+): string | undefined => {
+  const disallowedKeys = [
+    "minLength",
+    "minimum",
+    "maxLength",
+    "maximum",
+    "oneOf",
+    "anyOf",
+    "allOf",
+    "pattern",
+  ];
+
+  for (const key in schema) {
+    if (disallowedKeys.includes(key)) {
+      return `Disallowed property '${key}' found in schema`;
+    }
+
+    if (key === "properties" && typeof schema[key] === "object") {
+      for (const prop of Object.values(schema[key])) {
+        const error = illegalSchemaCheck(prop as Record<string, any>);
+        if (error) return error;
+      }
+    }
+
+    if (key === "items" && typeof schema[key] === "object") {
+      const error = illegalSchemaCheck(schema[key]);
+      if (error) return error;
+    }
   }
 };

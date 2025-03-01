@@ -69,6 +69,37 @@ describe("schema", () => {
     expect(minimalSchema(schema2)).toBe(expected2);
   });
 
+  test.only("should handle referenced schema types", () => {
+    const schema = {
+      "$id": "https://example.com/schemas/customer",
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "shipping_address": { "$ref": "#/$defs/address" },
+      },
+      "$defs": {
+        "address": {
+          "$id": "https://example.com/schemas/address",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "street_address": { "type": "string" },
+            "city": { "type": "string" },
+            "state": { "$ref": "#/$defs/state" }
+          },
+        },
+        "state": { "enum": ["CA", "NY"] }
+      }
+    };
+
+    const expected =
+      "{ first_name: string, last_name: string, shipping_address: { street_address: string, city: string, state: 'CA' | 'NY' } }";
+    expect(minimalSchema(schema)).toBe(expected);
+
+  });
+
   test("should handle mixed numeric and string enums", () => {
     const schema = {
       type: "object",
