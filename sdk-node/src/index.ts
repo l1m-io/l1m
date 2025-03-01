@@ -12,6 +12,10 @@ type ClientOptions = {
     url: string;
     key: string;
   };
+  /**
+   * Optional additional headers to include in all requests
+   */
+  additionalHeaders?: Record<string, string>;
 };
 
 type StructuredRequestInput<T extends z.ZodObject<any> | unknown> = {
@@ -42,6 +46,10 @@ type RequestOptions = {
    * Optional cache TTL in seconds
    */
   cacheTTL?: number;
+  /**
+   * Optional additional headers for this specific request
+   */
+  additionalHeaders?: Record<string, string>;
 };
 
 class L1MError extends Error {
@@ -63,16 +71,18 @@ export class L1M {
   private baseUrl: string;
   private client: AxiosInstance;
   private provider?: RequestOptions["provider"];
+  private additionalHeaders?: Record<string, string>;
 
   constructor(options?: ClientOptions) {
     this.baseUrl = options?.baseUrl || "https://api.l1m.io";
-
     this.provider = options?.provider;
+    this.additionalHeaders = options?.additionalHeaders;
 
     this.client = axios.create({
       baseURL: this.baseUrl,
       headers: {
         "Content-Type": "application/json",
+        ...this.additionalHeaders,
       },
     });
   }
@@ -109,6 +119,7 @@ export class L1M {
                   "x-cache-ttl": options.cacheTTL,
                 }
               : {}),
+            ...options?.additionalHeaders,
           },
         }
       );
