@@ -11,12 +11,14 @@ interface ProviderConfig {
   model: string;
 }
 
+type ProviderFunc = (params: StructuredParams, minimal: string, descriptions: string) => Promise<string>;
+
 interface StructuredParams {
   input: string;
   type?: string;
   instruction?: string;
   schema: Schema;
-  provider: ProviderConfig;
+  provider: ProviderConfig | ProviderFunc;
 }
 
 /**
@@ -36,16 +38,21 @@ export const structured = async (params: StructuredParams) => {
     structured: null,
   };
 
-  if (provider.url.includes("generativelanguage.googleapis.com")) {
-    result = await processWithGoogle(params, minimal, descriptions);
+  if (typeof provider === "function") {
+    result = await processWithCustomHandler({...params, provider}, minimal, descriptions);
+  } else {
+    if (provider.url.includes("generativelanguage.googleapis.com")) {
+      result = await processWithGoogle({...params, provider}, minimal, descriptions);
+    }
+
+    if (provider.url.includes("api.anthropic.com")) {
+      result = await processWithAnthropic({...params, provider}, minimal, descriptions);
+    }
+
+    // Default to OpenAI if no more-specific provider is inferred
+    result = await processWithOpenAI({...params, provider}, minimal, descriptions);
   }
 
-  if (provider.url.includes("api.anthropic.com")) {
-    result = await processWithAnthropic(params, minimal, descriptions);
-  }
-
-  // Default to OpenAI if no more-specific provider is inferred
-  result = await processWithOpenAI(params, minimal, descriptions);
 
   return {
     raw: result.raw,
@@ -84,8 +91,23 @@ export const parseJsonSubstring = (raw: string) => {
   };
 };
 
+
+const processWithCustomHandler = async (
+  params: StructuredParams & { provider: ProviderFunc },
+  minimal: string,
+  descriptions: string
+) => {
+  const text = await params.provider(params, minimal, descriptions);
+
+  if (!text) {
+    throw new Error("Custom Provider returned invalid response");
+  }
+
+  return parseJsonSubstring(text);
+};
+
 const processWithGoogle = async (
-  params: StructuredParams,
+  params: StructuredParams & { provider: ProviderConfig },
   minimal: string,
   descriptions: string
 ) => {
@@ -118,8 +140,9 @@ const processWithGoogle = async (
   return parseJsonSubstring(text);
 };
 
+
 const processWithAnthropic = async (
-  params: StructuredParams,
+  params: StructuredParams & { provider: ProviderConfig },
   minimal: string,
   descriptions: string
 ) => {
@@ -167,7 +190,7 @@ const processWithAnthropic = async (
 };
 
 const processWithOpenAI = async (
-  params: StructuredParams,
+  params: StructuredParams & { provider: ProviderConfig },
   minimal: string,
   descriptions: string
 ) => {

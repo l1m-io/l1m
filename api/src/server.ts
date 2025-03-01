@@ -3,10 +3,9 @@ import fastify from "fastify";
 import { apiContract } from "./contract";
 import { initServer } from "@ts-rest/fastify";
 import { generateCacheKey, redis } from "./redis";
-import { inferMimeType } from "./base64";
 import { getDemoData } from "./demo-provider";
 
-import { validateJsonSchema, structured, validTypes } from "@l1m/core";
+import { validateJsonSchema, structured, validTypes, inferType } from "@l1m/core";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -68,7 +67,7 @@ const router = s.router(apiContract, {
       };
     }
 
-    const type = await inferMimeType(input);
+    const type = await inferType(input);
 
     if (type && !validTypes.includes(type)) {
       server.log.warn({

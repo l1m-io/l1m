@@ -1,13 +1,13 @@
 {
   "name": "@l1m/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
     "ajv": "^8.17.1",
     "dereference-json-schema": "^0.2.1",
-    "file-type": "^20.3.0",
     "jsonschema": "^1.5.0",
+    "mimetics": "^1.0.4",
     "tsx": "^4.19.3",
     "zod": "^3.24.2"
   },
@@ -16,7 +16,6 @@
     "@types/node": "^20.11.24",
     "dotenv": "^16.4.7",
     "jest": "^29.7.0",
-    "jest-fetch-mock": "^3.0.3",
     "prettier": "^3.2.5",
     "ts-jest": "^29.2.6",
     "typescript": "^5.7.3"
@@ -25,10 +24,6 @@
     "@anthropic-ai/sdk": "^0.36.3",
     "@google/generative-ai": "^0.22.0",
     "openai": "^4.85.4"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node"
   },
   "scripts": {
     "test": "jest --config=jest.config.js",
