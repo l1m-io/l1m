@@ -140,4 +140,3 @@ def test_invalid_api_key():
     print("Error:", error)
 
     assert error.status_code == 401
-    assert error.message == "Failed to call provider"

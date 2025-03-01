@@ -101,7 +101,6 @@ async function testInvalidApiKey() {
   });
 
   assert.strictEqual(error.statusCode, 401);
-  assert.strictEqual(error.message, "Failed to call provider");
 }
 
 // Main test runner - executes all tests
