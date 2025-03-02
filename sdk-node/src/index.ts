@@ -46,10 +46,16 @@ type RequestOptions = {
    * Optional cache TTL in seconds
    */
   cacheTTL?: number;
+
   /**
    * Optional additional headers for this specific request
    */
   additionalHeaders?: Record<string, string>;
+
+  /**
+   * Optional number of times to attempt the request
+   */
+  maxAttempts?: number;
 };
 
 class L1MError extends Error {
@@ -117,6 +123,11 @@ export class L1M {
             ...(options?.cacheTTL
               ? {
                   "x-cache-ttl": options.cacheTTL,
+                }
+              : {}),
+            ...(options?.maxAttempts
+              ? {
+                  "x-max-attempts": options.maxAttempts,
                 }
               : {}),
             ...options?.additionalHeaders,
