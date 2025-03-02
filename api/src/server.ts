@@ -5,7 +5,12 @@ import { initServer } from "@ts-rest/fastify";
 import { generateCacheKey, redis } from "./redis";
 import { getDemoData } from "./demo-provider";
 
-import { validateJsonSchema, structured, validTypes, inferType } from "@l1m/core";
+import {
+  validateJsonSchema,
+  structured,
+  validTypes,
+  inferType,
+} from "@l1m/core";
 
 const server = fastify({ logger: true });
 const s = initServer();
@@ -39,7 +44,7 @@ const router = s.router(apiContract, {
 
     const maxAttempts = headers["x-max-attempts"] ?? 1;
 
-    const { input, instruction } = body;
+    const { input, instructions } = body;
     let { schema } = body;
 
     const schemaError = validateJsonSchema(schema);
@@ -120,27 +125,26 @@ const router = s.router(apiContract, {
       const fromCache = cacheKey ? await redis?.get(cacheKey) : null;
       reply.header("x-cache", fromCache ? "HIT" : "MISS");
 
-      const result = fromCache ?
-        {
-          structured: JSON.parse(fromCache),
-          valid: true,
-          raw: undefined,
-          errors: undefined,
-          attempts: 1,
-        } :
-        await structured({
-          input,
-          type,
-          schema,
-          instruction,
-          maxAttempts: maxAttempts ? parseInt(maxAttempts) : undefined,
-          provider: {
-            url: providerUrl,
-            key: providerKey,
-            model: providerModel,
-          },
-        });
-
+      const result = fromCache
+        ? {
+            structured: JSON.parse(fromCache),
+            valid: true,
+            raw: undefined,
+            errors: undefined,
+            attempts: 1,
+          }
+        : await structured({
+            input,
+            type,
+            schema,
+            instructions,
+            maxAttempts: maxAttempts ? parseInt(maxAttempts) : undefined,
+            provider: {
+              url: providerUrl,
+              key: providerKey,
+              model: providerModel,
+            },
+          });
 
       reply.header("x-attempts", result.attempts);
 
@@ -157,7 +161,12 @@ const router = s.router(apiContract, {
       }
 
       if (!fromCache && cacheKey) {
-        await redis?.set(cacheKey, JSON.stringify(result.structured), "EX", ttl);
+        await redis?.set(
+          cacheKey,
+          JSON.stringify(result.structured),
+          "EX",
+          ttl
+        );
       }
 
       server.log.info({
@@ -191,9 +200,8 @@ const router = s.router(apiContract, {
 
 server.setErrorHandler((error, _, reply) => {
   let status = error.statusCode || 500;
-  if ('status' in error && typeof error.status === 'number') {
+  if ("status" in error && typeof error.status === "number") {
     status = error.status;
-
   }
 
   reply.status(status).send({
@@ -220,32 +228,32 @@ const start = async () => {
 
 start();
 
-process.on('SIGTERM', () => {
-  server.log.info('SIGTERM signal received: closing HTTP server')
-  shutdown()
-})
+process.on("SIGTERM", () => {
+  server.log.info("SIGTERM signal received: closing HTTP server");
+  shutdown();
+});
 
-process.on('SIGINT', () => {
-  server.log.info('SIGINT signal received: closing HTTP server')
-  shutdown()
-})
+process.on("SIGINT", () => {
+  server.log.info("SIGINT signal received: closing HTTP server");
+  shutdown();
+});
 
 const shutdown = async () => {
   try {
     // Close the server first (stop accepting new connections)
-    await server.close()
-    server.log.info('HTTP server closed')
+    await server.close();
+    server.log.info("HTTP server closed");
 
     // Close Redis connection if it exists
     if (redis && redis.quit) {
-      await redis.quit()
-      server.log.info('Redis connection closed')
+      await redis.quit();
+      server.log.info("Redis connection closed");
     }
 
-    server.log.info('Shutdown completed')
-    process.exit(0)
+    server.log.info("Shutdown completed");
+    process.exit(0);
   } catch (err) {
-    server.log.error(err)
-    process.exit(1)
+    server.log.error(err);
+    process.exit(1);
   }
-}
+};

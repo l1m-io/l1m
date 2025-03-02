@@ -19,7 +19,7 @@ beforeAll(() => {
 
 async function structured(input: {
   input: string;
-  instruction?: string;
+  instructions?: string;
   schema: object;
   customHeaders?: Record<string, string>;
 }) {
@@ -37,7 +37,7 @@ async function structured(input: {
       body: JSON.stringify({
         input: input.input,
         schema: input.schema,
-        instruction: input.instruction,
+        instructions: input.instructions,
       }),
     }
   );
@@ -373,8 +373,8 @@ describe("Structured Data Extraction API", () => {
     expect(result.data.grassColor).toBe("green");
   });
 
-  test("processes instruction correctly", async () => {
-    const instruction = "The word is haystack";
+  test("processes instructions correctly", async () => {
+    const instructions = "The word is haystack";
     const input = "Fill in the most appropriate details.";
     const schema = {
       type: "object",
@@ -388,7 +388,7 @@ describe("Structured Data Extraction API", () => {
     const { response, result } = await structured({
       input,
       schema,
-      instruction,
+      instructions,
     });
 
     expect(response.ok).toBeTruthy();

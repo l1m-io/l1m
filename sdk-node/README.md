@@ -30,7 +30,7 @@ const l1m = new L1M({
 const result = await l1m.structured({
   input: "John Smith was born on January 15, 1980. He works at Acme Inc. as a Senior Engineer and can be reached at john.smith@example.com or by phone at (555) 123-4567.",
   // OR  input: "<BASE64_ENCODED_IMAGE>",
-  instruction: "Extract details from the provided text", // Optional
+  instructions: "Extract details from the provided text", // Optional
   schema: z.object({
     name: z.string(),
     company: z.string(),

@@ -17,7 +17,7 @@ type ProviderFunc = (params: StructuredParams, initialPrompt: string, previousAt
 interface StructuredParams {
   input: string;
   type?: string;
-  instruction?: string;
+  instructions?: string;
   schema: Schema;
   provider: ProviderConfig | ProviderFunc;
   maxAttempts?: number;
@@ -130,14 +130,14 @@ const processWithGoogle = async (
   initialPrompt: string,
   previousAttempts: {raw: string, errors?: string}[]
 ) => {
-  const { input, type, instruction, provider } = params;
+  const { input, type, instructions, provider } = params;
   const google = new GoogleGenerativeAI(provider.key);
   const model = google.getGenerativeModel({ model: provider.model });
 
   const parts: Part[] = [];
 
   if (type && type.startsWith("image/")) {
-    parts.push({ text: `${instruction} ${initialPrompt}` });
+    parts.push({ text: `${instructions} ${initialPrompt}` });
     parts.push({
       inlineData: {
         data: input,
@@ -145,7 +145,7 @@ const processWithGoogle = async (
       },
     });
   } else {
-    parts.push({ text: `${input} ${instruction} ${initialPrompt}` });
+    parts.push({ text: `${input} ${instructions} ${initialPrompt}` });
   }
 
   previousAttempts.forEach((attempt) => {
@@ -168,7 +168,7 @@ const processWithAnthropic = async (
   initialPrompt: string,
   previousAttempts: {raw: string, errors?: string}[]
 ) => {
-  const { input, type, instruction, provider } = params;
+  const { input, type, instructions, provider } = params;
   const anthropic = new Anthropic({
     apiKey: provider.key,
   });
@@ -179,7 +179,7 @@ const processWithAnthropic = async (
     messages.push({
       role: "user",
       content: [
-        { type: "text", text: `${instruction} ${initialPrompt}` },
+        { type: "text", text: `${instructions} ${initialPrompt}` },
         {
           type: "image",
           source: {
@@ -193,7 +193,7 @@ const processWithAnthropic = async (
   } else {
     messages.push({
       role: "user",
-      content: `${input} ${instruction} ${initialPrompt}`,
+      content: `${input} ${instructions} ${initialPrompt}`,
     });
   }
 
@@ -224,7 +224,7 @@ const processWithOpenAI = async (
   initialPrompt: string,
   previousAttempts: {raw: string, errors?: string}[]
 ) => {
-  const { input, type, instruction, provider } = params;
+  const { input, type, instructions, provider } = params;
   const openai = new OpenAI({
     apiKey: provider.key,
     baseURL: provider.url,
@@ -235,7 +235,7 @@ const processWithOpenAI = async (
   if (type && type.startsWith("image/")) {
     messages.push({
       role: "user",
-      content: `${instruction} ${initialPrompt}`,
+      content: `${instructions} ${initialPrompt}`,
     });
 
     messages.push({
@@ -252,7 +252,7 @@ const processWithOpenAI = async (
   } else {
     messages.push({
       role: "user",
-      content: `${input} ${instruction} ${initialPrompt}`,
+      content: `${input} ${instructions} ${initialPrompt}`,
     });
   }
 
