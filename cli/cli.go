@@ -28,7 +28,7 @@ var (
 func main() {
 	// Define command line flags
 	schemaFlag := flag.String("s", "", "JSON schema for structuring the data (required)")
-	instructionFlag := flag.String("i", "", "Optional instruction for the LLM")
+	instructionFlag := flag.String("i", "", "Optional instructions for the LLM")
 	providerURLFlag := flag.String("url", os.Getenv("L1M_PROVIDER_URL"), "Provider URL (defaults to L1M_PROVIDER_URL env var)")
 	providerKeyFlag := flag.String("key", os.Getenv("L1M_PROVIDER_KEY"), "Provider API key (defaults to L1M_PROVIDER_KEY env var)")
 	providerModelFlag := flag.String("model", os.Getenv("L1M_PROVIDER_MODEL"), "Provider model (defaults to L1M_PROVIDER_MODEL env var)")
@@ -93,7 +93,7 @@ func main() {
 		Schema: schema,
 	}
 
-	// Add instruction if provided
+	// Add instructions if provided
 	if *instructionFlag != "" {
 		instruction := *instructionFlag
 		req.Instruction = &instruction
@@ -117,10 +117,10 @@ func main() {
 }
 
 func printUsage() {
-	fmt.Fprintf(os.Stderr, "Usage: l1m -s <json_schema> [-i <instruction>] | cat \"unstructured stuff\"\n\n")
+	fmt.Fprintf(os.Stderr, "Usage: l1m -s <json_schema> [-i <instructions>] | cat \"unstructured stuff\"\n\n")
 	fmt.Fprintf(os.Stderr, "Options:\n")
 	fmt.Fprintf(os.Stderr, "  -s <json_schema>    JSON schema for structuring the data (required)\n")
-	fmt.Fprintf(os.Stderr, "  -i <instruction>    Optional instruction for the LLM\n")
+	fmt.Fprintf(os.Stderr, "  -i <instructions>    Optional instructions for the LLM\n")
 	fmt.Fprintf(os.Stderr, "  -url <url>          Provider URL (defaults to L1M_PROVIDER_URL env var)\n")
 	fmt.Fprintf(os.Stderr, "  -key <key>          Provider API key (defaults to L1M_PROVIDER_KEY env var)\n")
 	fmt.Fprintf(os.Stderr, "  -model <model>      Provider model (defaults to L1M_PROVIDER_MODEL env var)\n")

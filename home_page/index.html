@@ -367,7 +367,7 @@ TOOL_RESPONSE=$(curl -X POST https://api.l1m.io/structured \
 -H "X-Provider-Model: $PROVIDER_MODEL" \
 -d '{
   "input": "$INPUT",
-  "instruction": "Select the most appropriate tool based on the input",
+  "instructions": "Select the most appropriate tool based on the input",
   "schema": {
     "type": "object",
     "properties": {
@@ -495,7 +495,7 @@ curl -X POST https://api.l1m.io/structured \
       </ul>
     </li>
     <li>
-      <code>instruction</code> Optional instruction to include in the request to the model.
+      <code>instructions</code> Optional instructions to include in the request to the model.
     </li>
   </ul>
   </ul>

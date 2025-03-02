@@ -79,11 +79,11 @@ echo "A particularly severe crisis in 1907 led Congress to enact the Federal Res
 ### Command Line Options
 
 ```
-Usage: l1m -s <json_schema> [-i <instruction>] | cat "unstructured stuff"
+Usage: l1m -s <json_schema> [-i <instructions>] | cat "unstructured stuff"
 
 Options:
   -s <json_schema>    JSON schema for structuring the data (required)
-  -i <instruction>    Optional instruction for the LLM
+  -i <instructions>   Optional instructions for the LLM
   -url <url>          Provider URL (defaults to L1M_PROVIDER_URL env var)
   -key <key>          Provider API key (defaults to L1M_PROVIDER_KEY env var)
   -model <model>      Provider model (defaults to L1M_PROVIDER_MODEL env var)

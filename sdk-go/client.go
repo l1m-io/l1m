@@ -113,8 +113,8 @@ type StructuredRequest struct {
 	// Input is the text or base64-encoded image to extract data from
 	Input string `json:"input"`
 	// Schema defines the desired output structure using JSON Schema
-	Schema interface{} `json:"schema"`
-	Instruction *string `json:"instruction",omitempty`
+	Schema       interface{} `json:"schema"`
+	Instructions *string     `json:"instructions",omitempty`
 }
 
 // StructuredResponse represents the response from a structured request.
