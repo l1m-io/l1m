@@ -137,7 +137,7 @@ const router = s.router(apiContract, {
             input,
             type,
             schema,
-            instructions,
+            instruction: instructions, // TODO: rename to instructions after migration
             maxAttempts: maxAttempts ? parseInt(maxAttempts) : undefined,
             provider: {
               url: providerUrl,
