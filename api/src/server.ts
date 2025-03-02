@@ -37,6 +37,8 @@ const router = s.router(apiContract, {
     const providerModel = headers["x-provider-model"];
     const providerUrl = headers["x-provider-url"];
 
+    const maxAttempts = headers["x-max-attempts"] ?? 1;
+
     const { input, instruction } = body;
     let { schema } = body;
 
@@ -124,18 +126,23 @@ const router = s.router(apiContract, {
           valid: true,
           raw: undefined,
           errors: undefined,
+          attempts: 1,
         } :
         await structured({
           input,
           type,
           schema,
           instruction,
+          maxAttempts: maxAttempts ? parseInt(maxAttempts) : undefined,
           provider: {
             url: providerUrl,
             key: providerKey,
             model: providerModel,
           },
         });
+
+
+      reply.header("x-attempts", result.attempts);
 
       if (!result.valid) {
         return {

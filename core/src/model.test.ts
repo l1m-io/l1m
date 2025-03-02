@@ -1,4 +1,37 @@
-import { parseJsonSubstring } from "./model";
+import { parseJsonSubstring, structured } from "./model";
+import { Schema } from "jsonschema";
+
+describe("structured", () => {
+  test("Retries on error", async () => {
+    // Mock provider that fails first time, succeeds second time
+    let attempts = 0;
+    const mockProvider = async () => {
+      attempts++;
+      if (attempts === 1) {
+        throw new Error("Simulated failure");
+      }
+      return '{"result": "success"}';
+    };
+
+    const schema: Schema = {
+      type: "object",
+      properties: {
+        result: { type: "string" }
+      }
+    };
+
+    const result = await structured({
+      input: "test input",
+      schema,
+      provider: mockProvider,
+      maxAttempts: 2
+    });
+
+    expect(attempts).toBe(2);
+    expect(result.structured).toEqual({ result: "success" });
+    expect(result.attempts).toBe(2);
+  });
+});
 
 describe("parseJsonSubstring", () => {
   test("Extracts JSON from a code block", () => {

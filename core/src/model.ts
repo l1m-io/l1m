@@ -1,5 +1,6 @@
 import { collectDescriptions, minimalSchema, validateResult } from "./schema";
 import { Schema } from "jsonschema";
+import retry from "async-retry";
 
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
@@ -11,7 +12,7 @@ interface ProviderConfig {
   model: string;
 }
 
-type ProviderFunc = (params: StructuredParams, minimal: string, descriptions: string) => Promise<string>;
+type ProviderFunc = (params: StructuredParams, initialPrompt: string, previousAttempts: {raw: string, errors?: string}[]) => Promise<string>;
 
 interface StructuredParams {
   input: string;
@@ -19,46 +20,64 @@ interface StructuredParams {
   instruction?: string;
   schema: Schema;
   provider: ProviderConfig | ProviderFunc;
+  maxAttempts?: number;
 }
 
 /**
  * Process structured data from different providers
  */
 export const structured = async (params: StructuredParams) => {
-  const { schema, provider } = params;
+  const { schema, provider, maxAttempts = 1 } = params;
 
-  const minimal = minimalSchema(schema);
-  const descriptions = collectDescriptions(schema);
+  const prompt = `Answer in JSON using this schema:\n${minimalSchema(schema)}\n${collectDescriptions(schema)}`;
 
-  let result: {
-    raw: string;
-    structured: Record<string, any> | null;
-  } = {
-    raw: "",
-    structured: null,
-  };
+  const previousAttempts: {raw: string, errors?: string}[] = [];
 
-  if (typeof provider === "function") {
-    result = await processWithCustomHandler({...params, provider}, minimal, descriptions);
-  } else {
-    if (provider.url.includes("generativelanguage.googleapis.com")) {
-      result = await processWithGoogle({...params, provider}, minimal, descriptions);
+  return await retry(async (_, attempts) => {
+    let processingResult: {
+      raw: string;
+      structured: Record<string, any> | null;
+    } = {
+      raw: "",
+      structured: null,
+    };
+
+    const last2Attempts = previousAttempts.slice(-2);
+
+    if (typeof provider === "function") {
+      processingResult = await processWithCustomHandler({...params, provider}, prompt, last2Attempts);
+    } else {
+      if (provider.url.includes("generativelanguage.googleapis.com")) {
+        processingResult = await processWithGoogle({...params, provider}, prompt, last2Attempts);
+      } else if (provider.url.includes("api.anthropic.com")) {
+        processingResult = await processWithAnthropic({...params, provider}, prompt, last2Attempts);
+      } else {
+        // Default to OpenAI if no more-specific provider is inferred
+        processingResult = await processWithOpenAI({...params, provider}, prompt, previousAttempts);
+      }
     }
 
-    if (provider.url.includes("api.anthropic.com")) {
-      result = await processWithAnthropic({...params, provider}, minimal, descriptions);
+    const validationResult = validateResult(schema, processingResult.structured);
+
+    if (!validationResult.valid) {
+      previousAttempts.push({
+        raw: processingResult.raw,
+        errors: validationResult.errors ? JSON.stringify(validationResult.errors, null, 2) : undefined,
+      });
+      if (attempts <= maxAttempts) {
+        throw new Error("Failed to validate result");
+      }
     }
 
-    // Default to OpenAI if no more-specific provider is inferred
-    result = await processWithOpenAI({...params, provider}, minimal, descriptions);
-  }
-
-
-  return {
-    raw: result.raw,
-    structured: result.structured,
-    ...validateResult(schema, result.structured),
-  };
+    return {
+      raw: processingResult.raw,
+      structured: processingResult.structured,
+      attempts,
+      ...validationResult,
+    };
+  }, {
+    retries: maxAttempts - 1
+  });
 };
 
 /**
@@ -94,10 +113,10 @@ export const parseJsonSubstring = (raw: string) => {
 
 const processWithCustomHandler = async (
   params: StructuredParams & { provider: ProviderFunc },
-  minimal: string,
-  descriptions: string
+  initialPrompt: string,
+  previousAttempts: {raw: string, errors?: string}[]
 ) => {
-  const text = await params.provider(params, minimal, descriptions);
+  const text = await params.provider(params, initialPrompt, previousAttempts);
 
   if (!text) {
     throw new Error("Custom Provider returned invalid response");
@@ -108,18 +127,17 @@ const processWithCustomHandler = async (
 
 const processWithGoogle = async (
   params: StructuredParams & { provider: ProviderConfig },
-  minimal: string,
-  descriptions: string
+  initialPrompt: string,
+  previousAttempts: {raw: string, errors?: string}[]
 ) => {
   const { input, type, instruction, provider } = params;
   const google = new GoogleGenerativeAI(provider.key);
   const model = google.getGenerativeModel({ model: provider.model });
 
   const parts: Part[] = [];
-  const promptText = `Answer in JSON using this schema: ${descriptions} ${minimal}`;
 
   if (type && type.startsWith("image/")) {
-    parts.push({ text: `${instruction} ${promptText}` });
+    parts.push({ text: `${instruction} ${initialPrompt}` });
     parts.push({
       inlineData: {
         data: input,
@@ -127,8 +145,12 @@ const processWithGoogle = async (
       },
     });
   } else {
-    parts.push({ text: `${input} ${instruction} ${promptText}` });
+    parts.push({ text: `${input} ${instruction} ${initialPrompt}` });
   }
+
+  previousAttempts.forEach((attempt) => {
+    parts.push({ text: "You previously responded: " + attempt.raw + " which produced validation errors: " + attempt.errors });
+  });
 
   const result = await model.generateContent(parts);
   const text = result.response.text();
@@ -143,8 +165,8 @@ const processWithGoogle = async (
 
 const processWithAnthropic = async (
   params: StructuredParams & { provider: ProviderConfig },
-  minimal: string,
-  descriptions: string
+  initialPrompt: string,
+  previousAttempts: {raw: string, errors?: string}[]
 ) => {
   const { input, type, instruction, provider } = params;
   const anthropic = new Anthropic({
@@ -152,13 +174,12 @@ const processWithAnthropic = async (
   });
 
   const messages: Anthropic.MessageParam[] = [];
-  const promptText = `Answer in JSON using this schema: ${descriptions} ${minimal}`;
 
   if (type && type.startsWith("image/")) {
     messages.push({
       role: "user",
       content: [
-        { type: "text", text: `${instruction} ${promptText}` },
+        { type: "text", text: `${instruction} ${initialPrompt}` },
         {
           type: "image",
           source: {
@@ -172,7 +193,16 @@ const processWithAnthropic = async (
   } else {
     messages.push({
       role: "user",
-      content: `${input} ${instruction} ${promptText}`,
+      content: `${input} ${instruction} ${initialPrompt}`,
+    });
+  }
+
+  if (previousAttempts.length > 0) {
+    previousAttempts.forEach((attempt) => {
+      messages.push({
+        role: "user",
+        content: "You previously responded: " + attempt.raw + " which produced validation errors: " + attempt.errors,
+      });
     });
   }
 
@@ -191,8 +221,8 @@ const processWithAnthropic = async (
 
 const processWithOpenAI = async (
   params: StructuredParams & { provider: ProviderConfig },
-  minimal: string,
-  descriptions: string
+  initialPrompt: string,
+  previousAttempts: {raw: string, errors?: string}[]
 ) => {
   const { input, type, instruction, provider } = params;
   const openai = new OpenAI({
@@ -201,12 +231,11 @@ const processWithOpenAI = async (
   });
 
   const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [];
-  const promptText = `Answer in JSON using this schema: ${descriptions} ${minimal}`;
 
   if (type && type.startsWith("image/")) {
     messages.push({
       role: "user",
-      content: `${instruction} ${promptText}`,
+      content: `${instruction} ${initialPrompt}`,
     });
 
     messages.push({
@@ -223,7 +252,16 @@ const processWithOpenAI = async (
   } else {
     messages.push({
       role: "user",
-      content: `${input} ${instruction} ${promptText}`,
+      content: `${input} ${instruction} ${initialPrompt}`,
+    });
+  }
+
+  if (previousAttempts.length > 0) {
+    previousAttempts.forEach((attempt) => {
+      messages.push({
+        role: "user",
+        content: "You previously responded: " + attempt.raw + " which produced validation errors: " + attempt.errors,
+      });
     });
   }
 

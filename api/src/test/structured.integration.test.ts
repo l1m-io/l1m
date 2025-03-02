@@ -130,6 +130,7 @@ describe("Structured Data Extraction API", () => {
     expect(result.data.address.street).toBe("123 Innovation Way");
     expect(Array.isArray(result.data.engineeringTeams)).toBeTruthy();
     expect(result.data.engineeringTeams.length).toBe(3);
+    expect(response.headers.get("x-attempts")).toBe("1");
   });
 
   test("handles base64 encoded JSON correctly", async () => {

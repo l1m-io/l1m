@@ -36,6 +36,7 @@ export const apiContract = c.router({
       "x-provider-model": z.string(),
       "x-provider-url": z.string(),
       "x-provider-key": z.string(),
+      "x-max-attempts": z.string().optional().default("1"),
       "x-cache-ttl": z.string().optional(),
     }),
     responses: {
