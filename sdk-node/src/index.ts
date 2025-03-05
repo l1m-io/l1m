@@ -101,7 +101,7 @@ export class L1M {
     { input, schema, instructions }: StructuredRequestInput<T>,
     options?: RequestOptions
   ): Promise<TOutput> {
-    const provider = this.provider ?? options?.provider;
+    const provider =  options?.provider ?? this.provider;
 
     if (!provider) {
       throw new L1MError("No provider specified");
