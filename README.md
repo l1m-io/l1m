@@ -24,7 +24,7 @@ l1m is the easiest way to get structured data from unstructured text or images u
 
 ## 🚀 Quick Start
 
-### Curl Example
+### Text Example
 
 ```bash
 curl -X POST https://api.l1m.io/structured \
@@ -43,7 +43,7 @@ curl -X POST https://api.l1m.io/structured \
           "type": "object",
           "properties": {
             "name": { "type": "string" },
-            "year": { "type": "number" }
+            "price": { "type": "number" }
           }
         }
       }
@@ -52,121 +52,45 @@ curl -X POST https://api.l1m.io/structured \
 }'
 ```
 
-### TypeScript Example
+### Image Example
 
-```typescript
-import { L1M } from 'l1m';
-import { z } from 'zod';
-
-// Initialize the client
-const client = new L1M({
-  provider: {
-    model: 'gpt-4',
-    url: 'https://api.openai.com/v1',
-    key: 'your-api-key'
+```bash
+curl -X POST https://api.l1m.io/structured \
+-H "Content-Type: application/json" \
+-H "X-Provider-Url: demo" \
+-H "X-Provider-Key: demo" \
+-H "X-Provider-Model: demo" \
+-d '{
+  "input": "'$(curl -s https://public.l1m.io/menu.jpg | base64)'",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": { "type": "string" },
+            "price": { "type": "number" }
+          }
+        }
+      }
+    }
   }
-});
-
-// Define your schema using Zod
-const schema = z.object({
-  items: z.array(z.object({
-    name: z.string(),
-    year: z.number()
-  }))
-});
-
-// Extract structured data
-const result = await client.structured({
-  input: "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
-  schema
-});
-
-console.log(result);
+}'
 ```
+
+### Node.js Example
+
+See [sdk-node](https://github.com/inferablehq/l1m/tree/main/sdk-node) for a complete example.
 
 ### Python Example
 
-```python
-from l1m import L1M, ClientOptions, ProviderOptions
-from pydantic import BaseModel
-from typing import List
-
-# Define your schema using Pydantic
-class Item(BaseModel):
-    name: str
-    year: float
-
-class Response(BaseModel):
-    items: List[Item]
-
-# Initialize the client
-client = L1M(ClientOptions(
-    provider=ProviderOptions(
-        model="gpt-4",
-        url="https://api.openai.com/v1",
-        key="your-api-key"
-    )
-))
-
-# Extract structured data
-result = client.structured(
-    input="A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
-    schema=Response
-)
-
-print(result)
-```
+See [sdk-python](https://github.com/inferablehq/l1m/tree/main/sdk-python) for a complete example.
 
 ### Go Example
 
-```go
-package main
-
-import (
-    "fmt"
-    "github.com/inferablehq/l1m/sdk-go"
-)
-
-func main() {
-    // Initialize the client
-    client := l1m.NewClient(&l1m.ClientOptions{
-        Provider: &l1m.Provider{
-            Model: "gpt-4",
-            URL:   "https://api.openai.com/v1",
-            Key:   "your-api-key",
-        },
-    })
-
-    // Define your schema
-    schema := map[string]interface{}{
-        "type": "object",
-        "properties": map[string]interface{}{
-            "items": map[string]interface{}{
-                "type": "array",
-                "items": map[string]interface{}{
-                    "type": "object",
-                    "properties": map[string]interface{}{
-                        "name":  map[string]interface{}{"type": "string"},
-                        "year": map[string]interface{}{"type": "number"},
-                    },
-                },
-            },
-        },
-    }
-
-    // Extract structured data
-    result, err := client.Structured(&l1m.StructuredRequest{
-        Input:  "A particularly severe crisis in 1907 led Congress to enact the Federal Reserve Act in 1913",
-        Schema: schema,
-    }, nil)
-
-    if err != nil {
-        panic(err)
-    }
-
-    fmt.Printf("%+v\n", result)
-}
-```
+See [sdk-go](https://github.com/inferablehq/l1m/tree/main/sdk-go) for a complete example.
 
 ## 📚 Documentation
 
@@ -201,6 +125,7 @@ Join our [waitlist](https://docs.google.com/forms/d/1R3AsXBlHjsxh3Mafz1ziji7IUDo
 
 ## 📚 Acknowledgements
 
+- [BAML](https://github.com/boundaryml/baml)
 - [Zod](https://github.com/colinhacks/zod)
 - [ts-rest](https://github.com/ts-rest/ts-rest)
 - [ajv](https://ajv.js.org/)
